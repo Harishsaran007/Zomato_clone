@@ -28,15 +28,12 @@ const Navbar = () => {
   const [open, setOpen] = useState(false);
 
   return (
-    <div className="w-full border-b border-gray-200 shadow-sm">
-      <nav className="w-full max-w-[1200px] mx-auto flex items-center justify-between px-4 py-3">
-
-
+    <nav className="w-full flex flex-col sm:flex-row sm:items-center gap-3 px-3 sm:px-6 py-3 sm:py-4">
       <div className="flex-shrink-0">
         <img src={logo} className="h-8 object-contain" />
       </div>
 
-        <div className="flex flex-1 items-center gap-3 px-3">
+        <div className="flex flex-1 min-w-0 items-center gap-3 px-1 sm:px-3">
           <Popover open={open} onOpenChange={setOpen}>
               <PopoverTrigger className="flex items-center gap-2 border px-4 py-2 rounded-lg text-sm text-black/60 hover:bg-gray-100 shadow-sm h-10 ">
                 {location}
@@ -66,15 +63,13 @@ const Navbar = () => {
         
           <Input 
             placeholder="Search for restaurant, cuisine or a dish"
-            className="w-full max-w-[420px] h-10 rounded-lg shadow-sm"
-          />
-        </div>
-        
-          <Button className="bg-red-500 h-10 px-6 text-white">
+            className="w-full h-10 min-w-0 rounded-lg shadow-sm"
+          />     
+          <Button className="bg-red-500 h-10 px-3 sm:px-6 text-white">
             Login
           </Button>
+        </div>
     </nav>
-    </div>
   )
 }
 

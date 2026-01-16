@@ -6,11 +6,10 @@ import Deliver from './Components/Deliver/Deliver';
 
 const App = () => {
   return (
-    <div className="w-full min-h-screen bg-gray-50">
+    <div className="w-full min-h-screen overflow-x-hidden">
       <Navbar />
-      <div className="w-full max-w-[1200px] mx-auto">
-        <Home />
-      </div>
+      <Home />
+      
     </div>
 
   )
