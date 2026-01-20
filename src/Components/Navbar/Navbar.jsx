@@ -18,7 +18,6 @@ import {
   CommandShortcut,
 } from "@/components/ui/command"
 import { Button } from '../ui/button'
-import map_pin from '../../assets/map-pin.png'
 import { Input } from "@/components/ui/input"
 
 
@@ -45,15 +44,15 @@ const Navbar = () => {
                   <CommandInput placeholder="Add your Location" />
                   <CommandList className="max-h-36 overflow-y-auto ">
                     <CommandEmpty>Not Deliverable</CommandEmpty>
-                    <CommandGroup>
-                      <CommandItem onSelect={()=> {setLocation("Chennai"); setOpen(false); }} className='cursor-pointer py-1.5  pb-0.5 pt-0.5'>Chennai</CommandItem>
-                      <CommandItem onSelect={()=> {setLocation("Chidambaram"); setOpen(false); }} className='cursor-pointer py-1.5  pb-0.5 pt-0.5'>Chidambaram</CommandItem>
-                      <CommandItem onSelect={()=>{setLocation("Cuddalore"); setOpen(false); }} className='cursor-pointer py-1.5  pb-0.5 pt-0.5'>Cuddalore</CommandItem>
-                      <CommandItem onSelect={()=>{setLocation("Bhuvanagiri");setOpen(false); }} className='cursor-pointer py-1.5  pb-0.5 pt-0.5'>Bhuvanagiri</CommandItem>
-                      <CommandItem onSelect={()=>{setLocation("Coimbatore"); setOpen(false); }} className='cursor-pointer py-1.5  pb-0.5 pt-0.5'>Coimbatore</CommandItem>
-                      <CommandItem onSelect={()=>{setLocation("Vellore"); setOpen(false); }} className='cursor-pointer py-1.5 pb-0.5 pt-0.5'>Vellore</CommandItem>
-                      <CommandItem onSelect={()=>{setLocation("Mayiladuthurai"); setOpen(false); }} className='cursor-pointer py-1.5 pb-0.5 pt-0.5'>Mayiladuthurai</CommandItem>
-                    </CommandGroup>
+                      <CommandGroup>
+                        <CommandItem onSelect={()=> {setLocation("Chennai"); setOpen(false); }} className='cursor-pointer py-1.5  pb-0.5 pt-0.5'>Chennai</CommandItem>
+                        <CommandItem onSelect={()=> {setLocation("Chidambaram"); setOpen(false); }} className='cursor-pointer py-1.5  pb-0.5 pt-0.5'>Chidambaram</CommandItem>
+                        <CommandItem onSelect={()=>{setLocation("Cuddalore"); setOpen(false); }} className='cursor-pointer py-1.5  pb-0.5 pt-0.5'>Cuddalore</CommandItem>
+                        <CommandItem onSelect={()=>{setLocation("Bhuvanagiri");setOpen(false); }} className='cursor-pointer py-1.5  pb-0.5 pt-0.5'>Bhuvanagiri</CommandItem>
+                        <CommandItem onSelect={()=>{setLocation("Coimbatore"); setOpen(false); }} className='cursor-pointer py-1.5  pb-0.5 pt-0.5'>Coimbatore</CommandItem>
+                        <CommandItem onSelect={()=>{setLocation("Vellore"); setOpen(false); }} className='cursor-pointer py-1.5 pb-0.5 pt-0.5'>Vellore</CommandItem>
+                        <CommandItem onSelect={()=>{setLocation("Mayiladuthurai"); setOpen(false); }} className='cursor-pointer py-1.5 pb-0.5 pt-0.5'>Mayiladuthurai</CommandItem>
+                      </CommandGroup>
                     <CommandSeparator />
                   </CommandList>
                 </Command>

@@ -1,16 +1,20 @@
 import React from 'react'
 import Home from './Pages/Home/Home'
-import { Button } from "@/components/ui/button";
+import Details from './Pages/Details/Details'
 import Navbar from './Components/Navbar/Navbar';
-import Deliver from './Components/Deliver/Deliver';
+import { BrowserRouter,Routes, Route } from 'react-router-dom';
 
 const App = () => {
   return (
-    <div className="w-full min-h-screen overflow-x-hidden">
-      <Navbar />
-      <Home />
-      
-    </div>
+    <BrowserRouter>
+      <div className="w-full min-h-screen overflow-x-hidden">
+        <Navbar />
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/restaurant/:id" element={<Details />} />
+          </Routes>    
+      </div>
+    </BrowserRouter>
 
   )
 }

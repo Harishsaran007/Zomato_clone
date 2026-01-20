@@ -8,6 +8,7 @@ import food5 from '../../assets/food5.jpg';
 import Deliver from '@/Components/Deliver/Deliver';
 const restaurants = [
   {
+    id:1,
     img: food1,
     name: "Domino's Pizza",
     cuisine: "Pizza, Fast Food",
@@ -15,6 +16,7 @@ const restaurants = [
     time: "30",
   },
   {
+    id:2,
     img: food2,
     name: "Burger King",
     cuisine: "Burgers, Snacks",
@@ -22,6 +24,7 @@ const restaurants = [
     time: "25",
   },
   {
+    id:3,
     img: food3,
     name: "SS Hyderabad",
     cuisine: "Biryani, Indian",
@@ -29,6 +32,7 @@ const restaurants = [
     time: "35",
   },
   {
+    id:4,
     img: food4,
     name: "Amma Mess",
     cuisine: "Idly, Vada",
@@ -36,6 +40,7 @@ const restaurants = [
     time: "30",
   },
   {
+    id:5,
     img: food5,
     name: "Grill Night",
     cuisine: "Chicken, Mutton",
@@ -43,6 +48,7 @@ const restaurants = [
     time: "25",
   },
   {
+    id:6,
     img: food3,
     name: "SS Hyderabad",
     cuisine: "Biryani, Indian",
@@ -50,6 +56,7 @@ const restaurants = [
     time: "35",
   },
   {
+    id:7,
     img: food1,
     name: "Domino's Pizza",
     cuisine: "Pizza, Fast Food",
@@ -57,6 +64,7 @@ const restaurants = [
     time: "30",
   },
   {
+    id:8,
     img: food2,
     name: "Burger King",
     cuisine: "Burgers, Snacks",
@@ -64,6 +72,7 @@ const restaurants = [
     time: "25",
   },
   {
+    id:9,
     img: food3,
     name: "SS Hyderabad",
     cuisine: "Biryani, Indian",
@@ -71,6 +80,7 @@ const restaurants = [
     time: "35",
   },
   {
+    id: 10,
     img: food4,
     name: "Amma Mess",
     cuisine: "Idly, Vada",
@@ -78,6 +88,7 @@ const restaurants = [
     time: "30",
   },
   {
+    id:11,
     img: food5,
     name: "Grill Night",
     cuisine: "Chicken, Mutton",
@@ -85,6 +96,7 @@ const restaurants = [
     time: "25",
   },
   {
+    id:12,
     img: food3,
     name: "SS Hyderabad",
     cuisine: "Biryani, Indian",
@@ -100,9 +112,10 @@ const Home = () => {
     <div> 
       <Deliver />
       <div className="px-6 py-6 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-        {restaurants.map((res, index) => (
+        {restaurants.map((res) => (
           <Restaurant
-            key={index}
+            key={res.id}
+            id = {res.id}
             img={res.img}
             name={res.name}
             cuisine={res.cuisine}
