@@ -6,6 +6,9 @@ import food3 from "../../assets/food3.jpg";
 import food4 from "../../assets/food4.jpg";
 import food5 from '../../assets/food5.jpg';
 import Deliver from '@/Components/Deliver/Deliver';
+import axios from 'axios';
+
+
 const restaurants = [
   {
     id:1,
@@ -108,6 +111,9 @@ const restaurants = [
 
 
 const Home = () => {
+
+  const [restaurants,setRestaurants] = useState([]);
+
   return (
     <div> 
       <Deliver />

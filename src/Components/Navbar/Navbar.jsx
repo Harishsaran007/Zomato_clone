@@ -1,5 +1,7 @@
 import React from 'react'
 import logo from '../../assets/zomato.png'
+import cart from '../../assets/shopping-cart.png'
+import { Link } from 'react-router-dom';
 import { useState } from "react";
 import {
   Popover,
@@ -28,9 +30,9 @@ const Navbar = () => {
 
   return (
     <nav className="w-full flex flex-col sm:flex-row sm:items-center gap-3 px-3 sm:px-6 py-3 sm:py-4">
-      <div className="flex-shrink-0">
-        <img src={logo} className="h-8 object-contain" />
-      </div>
+      <Link to={`/`} className="flex-shrink-0">
+        <img src={logo} className="h-8 object-contain"/>
+      </Link>
 
         <div className="flex flex-1 min-w-0 items-center gap-3 px-1 sm:px-3">
           <Popover open={open} onOpenChange={setOpen}>
@@ -58,13 +60,15 @@ const Navbar = () => {
                 </Command>
               </PopoverContent>
           </Popover>
-        
-        
+
           <Input 
             placeholder="Search for restaurant, cuisine or a dish"
             className="w-full h-10 min-w-0 rounded-lg shadow-sm"
           />     
-          <Button className="bg-red-500 h-10 px-3 sm:px-6 text-white">
+
+          <img src={cart} className='h-8 cursor-pointer'/>
+
+          <Button className="bg-red-500 h-10 px-3 sm:px-6 text-white cursor-pointer">
             Login
           </Button>
         </div>

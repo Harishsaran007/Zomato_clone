@@ -121,12 +121,9 @@ const RestaurantDetails = () => {
                         <TableCell>&#8377;{item.price} </TableCell>
                         <TableCell className="text-right"><Button >Add</Button></TableCell>
                 </TableRow>
-                ))}
-                
+                ))}               
             </TableBody>
         </Table>
-
-
     </div>
   )
 }
