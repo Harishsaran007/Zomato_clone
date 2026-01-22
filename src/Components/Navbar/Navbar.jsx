@@ -1,7 +1,8 @@
 import React from 'react'
 import logo from '../../assets/zomato.png'
 import cart from '../../assets/shopping-cart.png'
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import axios from 'axios';
 import { useState } from "react";
 import {
   Popover,
@@ -34,9 +35,43 @@ const Navbar = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const [addresses, setAddresses] = useState([]);
   const [addressToEdit, setAddressToEdit] = useState(null);
+
+  // Search State
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState({ hotels: [], foods: [] });
+  const [showResults, setShowResults] = useState(false);
+  const navigate = useNavigate();
+
   const { getCartItemCount } = useCart();
   const { user, logout } = useAuth();
   const cartItemCount = getCartItemCount();
+
+  // Search Effect with Debounce
+  React.useEffect(() => {
+    const timer = setTimeout(async () => {
+      if (searchQuery.trim().length > 0) {
+        try {
+          const [hotelsRes, foodsRes] = await Promise.all([
+            axios.get(`/api/hotels/?search=${searchQuery}`),
+            axios.get(`/api/foods/?search=${searchQuery}`)
+          ]);
+
+          setSearchResults({
+            hotels: hotelsRes.data,
+            foods: foodsRes.data
+          });
+          setShowResults(true);
+        } catch (error) {
+          console.error("Search failed", error);
+        }
+      } else {
+        setSearchResults({ hotels: [], foods: [] });
+        setShowResults(false);
+      }
+    }, 500); // 500ms debounce
+
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
 
   const fetchAddresses = async () => {
     if (user) {
@@ -174,10 +209,72 @@ const Navbar = () => {
           onAddressUpdated={handleAddressUpdated}
         />
 
-        <Input
-          placeholder="Search for restaurant, cuisine or a dish"
-          className="w-full h-10 min-w-0 rounded-lg shadow-sm"
-        />
+        <div className="w-full relative">
+          <Input
+            placeholder="Search for restaurant, cuisine or a dish"
+            className="w-full h-10 min-w-0 rounded-lg shadow-sm"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            onFocus={() => { if (searchQuery) setShowResults(true); }}
+            onBlur={() => setTimeout(() => setShowResults(false), 200)}
+          />
+
+          {showResults && (searchResults.hotels.length > 0 || searchResults.foods.length > 0) && (
+            <div className="absolute top-12 left-0 right-0 bg-white border rounded-lg shadow-lg max-h-96 overflow-y-auto z-50">
+              {searchResults.hotels.length > 0 && (
+                <div className="p-2">
+                  <h3 className="text-xs font-semibold text-gray-500 mb-2 px-2">Restaurants</h3>
+                  {searchResults.hotels.map(hotel => (
+                    <div
+                      key={hotel.id}
+                      className="flex items-center gap-3 p-2 hover:bg-gray-50 cursor-pointer rounded-md"
+                      onClick={() => {
+                        navigate(`/restaurant/${hotel.id}`);
+                        setShowResults(false);
+                      }}
+                    >
+                      <img src={hotel.image_url || "https://images.pexels.com/photos/1581384/pexels-photo-1581384.jpeg"} alt={hotel.name} className="h-10 w-10 rounded-md object-cover" />
+                      <div>
+                        <p className="font-medium text-sm">{hotel.name}</p>
+                        <p className="text-xs text-gray-500">{hotel.city}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {searchResults.hotels.length > 0 && searchResults.foods.length > 0 && <div className="border-t my-1" />}
+
+              {searchResults.foods.length > 0 && (
+                <div className="p-2">
+                  <h3 className="text-xs font-semibold text-gray-500 mb-2 px-2">Dishes</h3>
+                  {searchResults.foods.map(food => (
+                    <div
+                      key={food.id}
+                      className="flex items-center gap-3 p-2 hover:bg-gray-50 cursor-pointer rounded-md"
+                      onClick={() => {
+                        // Attempt to navigate if hotel info is usable, otherwise show alert
+                        // Assuming food.hotel might be the name or ID. API example showed name.
+                        // Can't navigate to ID without ID.
+                        alert(`Found ${food.name} (${food.food_type === 'veg' ? 'Veg' : 'Non-veg'}). Visit restaurant to order.`);
+                        setShowResults(false);
+                      }}
+                    >
+                      <img src={food.image || "https://images.pexels.com/photos/1640777/pexels-photo-1640777.jpeg"} alt={food.name} className="h-10 w-10 rounded-md object-cover" />
+                      <div>
+                        <p className="font-medium text-sm">{food.name}</p>
+                        <p className="text-xs text-gray-500">
+                          {typeof food.hotel === 'object' ? food.hotel.name : food.hotel}
+                        </p>
+                        <p className="text-xs font-medium">&#8377;{food.price}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
 
         <Link to="/cart" className="relative flex-shrink-0">
           <img src={cart} className='h-8 cursor-pointer' />

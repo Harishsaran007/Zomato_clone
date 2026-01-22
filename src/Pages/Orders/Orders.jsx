@@ -62,7 +62,6 @@ const Orders = () => {
                         <TableHeader>
                             <TableRow>
                                 <TableHead>Order ID</TableHead>
-                                <TableHead>Hotel</TableHead>
                                 <TableHead>Status</TableHead>
                                 <TableHead>Date</TableHead>
                                 <TableHead className="text-right">Total Price</TableHead>
@@ -72,7 +71,6 @@ const Orders = () => {
                             {orders.map((order) => (
                                 <TableRow key={order.id}>
                                     <TableCell className="font-medium">#{order.id}</TableCell>
-                                    <TableCell>{order.hotel || "Unknown Hotel"}</TableCell>
                                     <TableCell>
                                         <span className={`px-2 py-1 rounded-full text-xs font-semibold 
                                             ${order.status === 'delivered' ? 'bg-green-100 text-green-800' :
