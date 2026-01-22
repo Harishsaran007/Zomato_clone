@@ -1,136 +1,77 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import Restaurant from '@/Components/Restaurant/Restaurant'
-import food1 from "../../assets/food1.jpg";
-import food2 from "../../assets/food2.jpeg";
-import food3 from "../../assets/food3.jpg";
-import food4 from "../../assets/food4.jpg";
-import food5 from '../../assets/food5.jpg';
 import Deliver from '@/Components/Deliver/Deliver';
 import axios from 'axios';
 
-
-const restaurants = [
-  {
-    id:1,
-    img: food1,
-    name: "Domino's Pizza",
-    cuisine: "Pizza, Fast Food",
-    rating: "4.2",
-    time: "30",
-  },
-  {
-    id:2,
-    img: food2,
-    name: "Burger King",
-    cuisine: "Burgers, Snacks",
-    rating: "4.0",
-    time: "25",
-  },
-  {
-    id:3,
-    img: food3,
-    name: "SS Hyderabad",
-    cuisine: "Biryani, Indian",
-    rating: "4.5",
-    time: "35",
-  },
-  {
-    id:4,
-    img: food4,
-    name: "Amma Mess",
-    cuisine: "Idly, Vada",
-    rating: "4.2",
-    time: "30",
-  },
-  {
-    id:5,
-    img: food5,
-    name: "Grill Night",
-    cuisine: "Chicken, Mutton",
-    rating: "4.0",
-    time: "25",
-  },
-  {
-    id:6,
-    img: food3,
-    name: "SS Hyderabad",
-    cuisine: "Biryani, Indian",
-    rating: "4.5",
-    time: "35",
-  },
-  {
-    id:7,
-    img: food1,
-    name: "Domino's Pizza",
-    cuisine: "Pizza, Fast Food",
-    rating: "4.2",
-    time: "30",
-  },
-  {
-    id:8,
-    img: food2,
-    name: "Burger King",
-    cuisine: "Burgers, Snacks",
-    rating: "4.0",
-    time: "25",
-  },
-  {
-    id:9,
-    img: food3,
-    name: "SS Hyderabad",
-    cuisine: "Biryani, Indian",
-    rating: "4.5",
-    time: "35",
-  },
-  {
-    id: 10,
-    img: food4,
-    name: "Amma Mess",
-    cuisine: "Idly, Vada",
-    rating: "4.2",
-    time: "30",
-  },
-  {
-    id:11,
-    img: food5,
-    name: "Grill Night",
-    cuisine: "Chicken, Mutton",
-    rating: "4.0",
-    time: "25",
-  },
-  {
-    id:12,
-    img: food3,
-    name: "SS Hyderabad",
-    cuisine: "Biryani, Indian",
-    rating: "4.5",
-    time: "35",
-  },
-];
-
-
+// Default placeholder image for hotels without an image
+const DEFAULT_HOTEL_IMAGE = "https://images.pexels.com/photos/1581384/pexels-photo-1581384.jpeg";
 
 const Home = () => {
+  const [hotels, setHotels] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  const [restaurants,setRestaurants] = useState([]);
+  useEffect(() => {
+    const fetchHotels = async () => {
+      try {
+        setLoading(true);
+        const response = await axios.get('/api/hotels/');
+        setHotels(response.data);
+        setError(null);
+      } catch (err) {
+        console.error('Error fetching hotels:', err);
+        setError('Failed to load hotels. Please try again later.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchHotels();
+  }, []);
+
+  // Helper function to get hotel image (use default if empty or null)
+  const getHotelImage = (imageUrl) => {
+    return imageUrl && imageUrl.trim() !== '' ? imageUrl : DEFAULT_HOTEL_IMAGE;
+  };
+
+  if (loading) {
+    return (
+      <div>
+        <Deliver />
+        <div className="px-6 py-6 flex justify-center items-center min-h-[300px]">
+          <div className="text-gray-500 text-lg">Loading hotels...</div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div>
+        <Deliver />
+        <div className="px-6 py-6 flex justify-center items-center min-h-[300px]">
+          <div className="text-red-500 text-lg">{error}</div>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div> 
+    <div>
       <Deliver />
       <div className="px-6 py-6 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-        {restaurants.map((res) => (
+        {hotels.filter(hotel => hotel.is_active).map((hotel) => (
           <Restaurant
-            key={res.id}
-            id = {res.id}
-            img={res.img}
-            name={res.name}
-            cuisine={res.cuisine}
-            rating={res.rating}
-            time={res.time}
+            key={hotel.id}
+            id={hotel.id}
+            img={getHotelImage(hotel.image_url)}
+            name={hotel.name}
+            cuisine={hotel.address}
+            rating="4.2"
+            time="30"
           />
         ))}
       </div>
-
     </div>
   )
 }

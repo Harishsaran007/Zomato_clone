@@ -9,4 +9,18 @@ export default defineConfig({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  server: {
+    proxy: {
+      '/api': {
+        target: 'https://render-test-gspe.onrender.com',
+        changeOrigin: true,
+        secure: false,
+      },
+      '/token': {
+        target: 'https://render-test-gspe.onrender.com',
+        changeOrigin: true,
+        secure: false,
+      },
+    },
+  },
 });
