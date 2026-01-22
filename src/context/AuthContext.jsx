@@ -20,9 +20,33 @@ export const AuthProvider = ({ children }) => {
         const token = localStorage.getItem('zomato-token');
         const savedUser = localStorage.getItem('zomato-user');
 
-        if (token && savedUser) {
-            setUser(JSON.parse(savedUser));
-            axios.defaults.headers.common['Authorization'] = `Bearer ${JSON.parse(token).access}`;
+        if (token) {
+            const parsedToken = JSON.parse(token);
+            let parsedUser = savedUser ? JSON.parse(savedUser) : {};
+
+            // Try to extract user_id from token if missing
+            if (!parsedUser.id && parsedToken.access) {
+                try {
+                    const base64Url = parsedToken.access.split('.')[1];
+                    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+                    const jsonPayload = decodeURIComponent(atob(base64).split('').map(function (c) {
+                        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+                    }).join(''));
+                    const payload = JSON.parse(jsonPayload);
+
+                    if (payload.user_id) {
+                        parsedUser = { ...parsedUser, id: payload.user_id };
+                        localStorage.setItem('zomato-user', JSON.stringify(parsedUser));
+                    }
+                } catch (e) {
+                    console.error("Failed to decode token for user ID", e);
+                }
+            }
+
+            if (savedUser || parsedUser.id) {
+                setUser(parsedUser);
+            }
+            axios.defaults.headers.common['Authorization'] = `Bearer ${parsedToken.access}`;
         }
         setLoading(false);
     }, []);
@@ -36,15 +60,27 @@ export const AuthProvider = ({ children }) => {
 
             const { access, refresh } = response.data;
 
-            // Since the login API only returns tokens, we'll store the username locally
-            // Ideally, we should fetch user profile after login using the token
-            const userData = { username };
+            // Decode token to get user_id
+            let userId = null;
+            try {
+                const base64Url = access.split('.')[1];
+                const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+                const jsonPayload = decodeURIComponent(atob(base64).split('').map(function (c) {
+                    return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+                }).join(''));
+                const payload = JSON.parse(jsonPayload);
+                userId = payload.user_id;
+            } catch (e) {
+                console.error("Failed to decode token", e);
+            }
+
+            const userData = { username, id: userId };
 
             localStorage.setItem('zomato-token', JSON.stringify({ access, refresh }));
             localStorage.setItem('zomato-user', JSON.stringify(userData));
 
             axios.defaults.headers.common['Authorization'] = `Bearer ${access}`;
-            setUser(userData); 
+            setUser(userData);
 
             return { success: true };
         } catch (error) {

@@ -14,13 +14,53 @@ import {
 } from "@/components/ui/table";
 import { Link } from 'react-router-dom';
 
+import { getProvinces } from '@/services/addressService';
+
 const DEFAULT_FOOD_IMAGE = "https://images.pexels.com/photos/1640777/pexels-photo-1640777.jpeg";
 
 const Cart = () => {
-    const { cartItems, removeFromCart, updateQuantity, clearCart, getCartTotal } = useCart();
+    const { cartItems, removeFromCart, updateQuantity, clearCart, getCartTotal, placeOrder } = useCart();
 
     const getImage = (url) => {
         return url && url.trim() !== '' ? url : DEFAULT_FOOD_IMAGE;
+    };
+
+    const [addresses, setAddresses] = useState([]);
+    const [selectedAddressId, setSelectedAddressId] = useState(null);
+    const { user } = useAuth();
+
+    // Fetch addresses
+    React.useEffect(() => {
+        const fetchAddresses = async () => {
+            if (user) {
+                try {
+                    const data = await getProvinces();
+                    setAddresses(data);
+                    // Select default address if available
+                    const defaultAddress = data.find(addr => addr.is_default);
+                    if (defaultAddress) {
+                        setSelectedAddressId(defaultAddress.id);
+                    } else if (data.length > 0) {
+                        setSelectedAddressId(data[0].id);
+                    }
+                } catch (error) {
+                    console.error("Failed to fetch addresses", error);
+                }
+            }
+        };
+        fetchAddresses();
+    }, [user]);
+
+    const handlePlaceOrder = async () => {
+        if (!selectedAddressId) {
+            alert("Please select a delivery address");
+            return;
+        }
+
+        const result = await placeOrder(selectedAddressId);
+        if (!result.success) {
+            alert(result.message);
+        }
     };
 
     if (cartItems.length === 0) {
@@ -52,7 +92,7 @@ const Cart = () => {
                 </Button>
             </div>
 
-            <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+            <div className="bg-white rounded-xl shadow-sm overflow-hidden mb-6">
                 <Table>
                     <TableHeader>
                         <TableRow>
@@ -121,13 +161,49 @@ const Cart = () => {
                 </Table>
             </div>
 
+            {/* Delivery Address Section */}
+            <div className="bg-white rounded-xl shadow-sm p-6 mb-6 border">
+                <h2 className="text-xl font-bold mb-4">Delivery Address</h2>
+                {addresses.length === 0 ? (
+                    <div className="text-gray-500">
+                        No addresses found.
+                        {/* Note: In a real app we'd open the add address modal here, but simpler to just say go to profile/navbar */}
+                        <p className="text-sm mt-2">Please add an address from the Navbar.</p>
+                    </div>
+                ) : (
+                    <div className="grid gap-4 md:grid-cols-2">
+                        {addresses.map((addr) => (
+                            <div
+                                key={addr.id}
+                                className={`border p-4 rounded-lg cursor-pointer transition-colors ${selectedAddressId === addr.id ? 'border-red-500 bg-red-50' : 'hover:border-gray-300'}`}
+                                onClick={() => setSelectedAddressId(addr.id)}
+                            >
+                                <div className="flex items-start gap-3">
+                                    <div className={`mt-1 h-4 w-4 rounded-full border border-gray-300 flex items-center justify-center ${selectedAddressId === addr.id ? 'border-red-500' : ''}`}>
+                                        {selectedAddressId === addr.id && <div className="h-2 w-2 rounded-full bg-red-500" />}
+                                    </div>
+                                    <div>
+                                        <p className="font-semibold">{addr.label}</p>
+                                        <p className="text-sm text-gray-600">{addr.address_line}, {addr.city}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                )}
+            </div>
+
             {/* Order Summary */}
-            <div className="mt-6 bg-gray-50 rounded-xl p-6">
+            <div className="bg-gray-50 rounded-xl p-6">
                 <div className="flex justify-between items-center text-xl font-bold">
                     <span>Total</span>
                     <span>&#8377;{getCartTotal().toFixed(2)}</span>
                 </div>
-                <Button className="w-full mt-4 bg-red-500 hover:bg-red-600 text-white h-12 text-lg">
+                <Button
+                    className="w-full mt-4 bg-red-500 hover:bg-red-600 text-white h-12 text-lg"
+                    onClick={handlePlaceOrder}
+                    disabled={cartItems.length === 0 || !selectedAddressId}
+                >
                     Proceed to Checkout
                 </Button>
             </div>

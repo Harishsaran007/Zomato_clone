@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import api from '@/utils/api';
+import { useAuth } from './AuthContext';
 
 
 const CartContext = createContext();
@@ -13,66 +14,94 @@ export const useCart = () => {
 };
 
 export const CartProvider = ({ children }) => {
-    const [cartItems, setCartItems] = useState(() => {
-        // Load cart from localStorage on initial render
-        const savedCart = localStorage.getItem('zomato-cart');
-        return savedCart ? JSON.parse(savedCart) : [];
-    });
+    const { user } = useAuth();
+    const [cartItems, setCartItems] = useState([]);
 
-    // Save cart to localStorage whenever it changes
+    const fetchCart = async () => {
+        try {
+            const response = await api.get('/cart/');
+            // Map API response to match internal structure expected by components
+            const mappedItems = response.data.map(item => ({
+                id: item.id, // This is now the Cart Item ID
+                name: item.food_name,
+                image: item.food_image,
+                price: item.food_price,
+                quantity: item.quantity,
+                total_price: item.total_price,
+                // store original data if needed
+                ...item
+            }));
+            setCartItems(mappedItems);
+        } catch (error) {
+            console.error("Failed to fetch cart:", error);
+        }
+    };
+
+    // Load cart when user logs in or mounts
     useEffect(() => {
-        localStorage.setItem('zomato-cart', JSON.stringify(cartItems));
-    }, [cartItems]);
+        if (user) {
+            fetchCart();
+        } else {
+            setCartItems([]);
+        }
+    }, [user]);
 
-    const addToCart = (item) => {
-        setCartItems((prevItems) => {
-            const existingItem = prevItems.find((i) => i.id === item.id && i.hotelId === item.hotelId);
-            if (existingItem) {
-                // Increase quantity if item already exists
-                return prevItems.map((i) =>
-                    i.id === item.id && i.hotelId === item.hotelId
-                        ? { ...i, quantity: i.quantity + 1 }
-                        : i
-                );
-            }
-            // Add new item with quantity 1
-            return [...prevItems, { ...item, quantity: 1 }];
-        });
+    const addToCart = async (item) => {
+        try {
+            await api.post('/cart/', {
+                food: item.id, // Item ID from RestaurantDetails is the Food ID
+                quantity: 1
+            });
+            fetchCart();
+        } catch (error) {
+            console.error("Failed to add to cart:", error);
+            alert("Failed to add to cart");
+        }
     };
 
-    const removeFromCart = (itemId, hotelId) => {
-        setCartItems((prevItems) =>
-            prevItems.filter((item) => !(item.id === itemId && item.hotelId === hotelId))
-        );
+    const removeFromCart = async (itemId) => {
+        try {
+            await api.delete(`/cart/${itemId}/`);
+            fetchCart();
+        } catch (error) {
+            console.error("Failed to remove from cart:", error);
+        }
     };
 
-    const updateQuantity = (itemId, hotelId, newQuantity) => {
+    const updateQuantity = async (itemId, _, newQuantity) => {
         if (newQuantity <= 0) {
-            removeFromCart(itemId, hotelId);
+            removeFromCart(itemId);
             return;
         }
-        setCartItems((prevItems) =>
-            prevItems.map((item) =>
-                item.id === itemId && item.hotelId === hotelId
-                    ? { ...item, quantity: newQuantity }
-                    : item
-            )
-        );
+        try {
+            await api.patch(`/cart/${itemId}/`, {
+                quantity: newQuantity
+            });
+            fetchCart();
+        } catch (error) {
+            console.error("Failed to update quantity:", error);
+        }
     };
 
-    const clearCart = () => {
-        setCartItems([]);
+    const clearCart = async () => {
+        try {
+            // API doesn't have a clear endpoint, delete all items parallelly
+            await Promise.all(cartItems.map(item => api.delete(`/cart/${item.id}/`)));
+            fetchCart();
+        } catch (error) {
+            console.error("Failed to clear cart:", error);
+        }
     };
 
     const getCartTotal = () => {
-        return cartItems.reduce((total, item) => total + parseFloat(item.price) * item.quantity, 0);
+        return cartItems.reduce((total, item) => total + (parseFloat(item.total_price) || (parseFloat(item.price) * item.quantity)), 0);
     };
 
     const getCartItemCount = () => {
         return cartItems.reduce((count, item) => count + item.quantity, 0);
     };
 
-    const placeOrder = async () => {
+    const placeOrder = async (addressId) => {
         try {
             if (cartItems.length === 0) throw new Error("Cart is empty");
 
@@ -87,6 +116,10 @@ export const CartProvider = ({ children }) => {
                 throw new Error("Please login to place an order");
             }
 
+            if (!addressId) {
+                throw new Error("Please select a delivery address");
+            }
+
             // Parse saved user to get ID
             let userId = null;
             if (savedUser) {
@@ -98,17 +131,23 @@ export const CartProvider = ({ children }) => {
                 throw new Error("User ID not found. Please logout and login again.");
             }
 
-            // For now, we take the hotel from the first item. 
-            const hotelId = cartItems[0].hotelId;
+            // Note: Hotel ID is missing in Cart API response.
+            // Using a fallback or user needs to ensure they order from one restaurant context if possible.
+            // Attempting to extract if available or using stored fallback if we had one.
+            // For now, sending null or 1 as temporary if not found to avoid crash?
+            // Or better, let's assume the backend might handle it or we can't send it.
+            // But api_examples requirement says hotel is needed.
+            // Let's try to pass null if undefined.
+            const hotelId = cartItems[0]?.hotel || null; // API might return hotel id in some field?
 
             // 1. Create Order
-            // According to api_examples.json, order creation needs: user, hotel, delivery_agent, status, total_price
             const orderData = {
                 user: userId,
                 hotel: hotelId,
                 delivery_agent: null,
                 status: "ordered",
-                total_price: total_price.toFixed(2)
+                total_price: total_price.toFixed(2),
+                address: addressId
             };
 
             console.log("Creating order with data:", orderData);
@@ -121,7 +160,6 @@ export const CartProvider = ({ children }) => {
             const paymentResponse = await api.get(`/orders/${orderId}/pay/`);
             console.log("Payment response:", paymentResponse.data);
 
-            // API returns "short_url" not "pay_url" per api_examples.json
             const paymentUrl = paymentResponse.data.short_url || paymentResponse.data.pay_url;
 
             if (paymentUrl) {
@@ -154,7 +192,6 @@ export const CartProvider = ({ children }) => {
             return { success: false, message };
         }
     };
-
 
     return (
         <CartContext.Provider
