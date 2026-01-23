@@ -4,8 +4,6 @@ import Deliver from '@/Components/Deliver/Deliver';
 import axios from 'axios';
 import restaurant_image from "../../assets/Restaurant1.jpg"
 
-// Default placeholder image for hotels without an image
-const DEFAULT_HOTEL_IMAGE = restaurant_image;
 
 const Home = () => {
   const [hotels, setHotels] = useState([]);
@@ -30,9 +28,9 @@ const Home = () => {
     fetchHotels();
   }, []);
 
-  // Helper function to get hotel image (use default if empty or null)
+
   const getHotelImage = (imageUrl) => {
-    return imageUrl && imageUrl.trim() !== '' ? imageUrl : DEFAULT_HOTEL_IMAGE;
+    return imageUrl && imageUrl.trim() !== '' ? imageUrl : restaurant_image;
   };
 
   if (loading) {

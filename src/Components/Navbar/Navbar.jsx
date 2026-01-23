@@ -24,18 +24,18 @@ import { Button } from '../ui/button'
 import { Input } from "@/components/ui/input"
 import { useCart } from '@/context/CartContext';
 import { useAuth } from '@/context/AuthContext';
-import { getProvinces, addAddress, updateAddress, deleteAddress } from '../../services/addressService';
-import { MoreVertical, Edit2, Trash2 } from 'lucide-react';
+import { useAddress } from '@/context/AddressContext';
+import { MoreVertical, Edit2, Trash2, Menu, User, ShoppingBag, LogOut } from 'lucide-react';
 import AddAddressModal from './AddAddressModal';
 import AccountDetailsModal from './AccountDetailsModal';
 
 
 const Navbar = () => {
-  const [location, setLocation] = useState("Location");
+  const { addresses, selectedAddress, selectAddress, addAddress, updateAddress, deleteAddress } = useAddress();
   const [open, setOpen] = useState(false);
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
   const [accountModalOpen, setAccountModalOpen] = useState(false);
-  const [addresses, setAddresses] = useState([]);
   const [addressToEdit, setAddressToEdit] = useState(null);
 
   // Search State
@@ -75,44 +75,20 @@ const Navbar = () => {
     return () => clearTimeout(timer);
   }, [searchQuery]);
 
-  const fetchAddresses = async () => {
-    if (user) {
-      try {
-        const data = await getProvinces();
-        setAddresses(data);
-        // Set default location if available and not already set
-        const defaultAddress = data.find(addr => addr.is_default);
-        if (defaultAddress && location === "Location") {
-          setLocation(defaultAddress.city);
-        }
-      } catch (error) {
-        console.error("Failed to fetch addresses", error);
-      }
-    }
-  };
 
-  React.useEffect(() => {
-    fetchAddresses();
-  }, [user]);
 
   const handleAddressAdded = async (newAddressData) => {
     try {
       await addAddress(newAddressData);
-      fetchAddresses(); // Refresh list
-      setLocation(newAddressData.city); // Select the new address
     } catch (error) {
       console.error("Failed to add address", error);
-      throw error; // Re-throw for modal to handle if needed
+      throw error;
     }
   };
 
   const handleAddressUpdated = async (id, updatedData) => {
     try {
       await updateAddress(id, updatedData);
-      fetchAddresses();
-      if (location === addressToEdit.city) {
-        setLocation(updatedData.city);
-      }
       setAddressToEdit(null);
     } catch (error) {
       console.error("Failed to update address", error);
@@ -123,13 +99,6 @@ const Navbar = () => {
   const handleDeleteAddress = async (id) => {
     try {
       await deleteAddress(id);
-      fetchAddresses();
-      // If deleted address was selected, reset location or pick another?
-      // For now, let's leave it as is or reset to "Location" if it matches
-      const deletedAddr = addresses.find(a => a.id === id);
-      if (deletedAddr && deletedAddr.city === location) {
-        setLocation("Location");
-      }
     } catch (error) {
       console.error("Failed to delete address", error);
     }
@@ -149,7 +118,7 @@ const Navbar = () => {
       <div className="flex flex-1 min-w-0 items-center gap-3 px-1 sm:px-3">
         <Popover open={open} onOpenChange={setOpen}>
           <PopoverTrigger className="flex items-center gap-2 border px-4 py-2 rounded-lg text-sm text-black/60 hover:bg-gray-100 shadow-sm h-10 ">
-            <span className="truncate max-w-[150px]">{location}</span>
+            <span className="truncate max-w-[150px]">{selectedAddress ? selectedAddress.city : "Location"}</span>
           </PopoverTrigger>
 
           <PopoverContent className="p-0 text-xs w-[250px]" align="start">
@@ -163,7 +132,7 @@ const Navbar = () => {
                       key={addr.id}
                       value={`${addr.label} ${addr.city}`}
                       onSelect={() => {
-                        setLocation(addr.city);
+                        selectAddress(addr);
                         setOpen(false);
                       }}
                       className="cursor-pointer py-2 flex items-center justify-between group"
@@ -261,9 +230,7 @@ const Navbar = () => {
                       key={food.id}
                       className="flex items-center gap-3 p-2 hover:bg-gray-50 cursor-pointer rounded-md"
                       onClick={() => {
-                        // Attempt to navigate if hotel info is usable, otherwise show alert
-                        // Assuming food.hotel might be the name or ID. API example showed name.
-                        // Can't navigate to ID without ID.
+                        
                         alert(`Found ${food.name} (${food.food_type === 'veg' ? 'Veg' : 'Non-veg'}). Visit restaurant to order.`);
                         setShowResults(false);
                         setSearchQuery("");
@@ -295,26 +262,47 @@ const Navbar = () => {
         </Link>
 
         {user ? (
-          <div className="flex items-center gap-3">
-            <span
-              className="text-sm font-semibold truncate max-w-[100px] hidden sm:block cursor-pointer hover:underline"
-              onClick={() => setAccountModalOpen(true)}
-            >
-              {user.username[0].toUpperCase()}
-            </span>
-            <Link to="/orders">
-              <Button variant="ghost" className="h-10 px-3 text-gray-700 hover:text-black hover:bg-gray-100">
-                My Orders
+          <Popover open={userMenuOpen} onOpenChange={setUserMenuOpen}>
+            <PopoverTrigger asChild>
+              <Button variant="ghost" size="icon" className="h-10 w-10 p-2 text-gray-700 hover:bg-gray-100 rounded-full">
+                <Menu className="h-6 w-6" />
               </Button>
-            </Link>
-            <Button
-              onClick={logout}
-              variant="outline"
-              className="h-10 px-3 sm:px-6 text-red-500 border-red-500 hover:bg-red-50 cursor-pointer"
-            >
-              Logout
-            </Button>
-          </div>
+            </PopoverTrigger>
+            <PopoverContent className="w-48 p-2" align="end">
+              <div className="flex flex-col gap-1">
+                <Button
+                  variant="ghost"
+                  className="w-full justify-start gap-2 h-10 px-2 font-normal"
+                  onClick={() => {
+                    setUserMenuOpen(false);
+                    setAccountModalOpen(true);
+                  }}
+                >
+                  <User className="h-4 w-4" />
+                  <span className="truncate max-w-[120px]">{user.username}</span>
+                </Button>
+
+                <Link to="/orders" onClick={() => setUserMenuOpen(false)} className="w-full">
+                  <Button variant="ghost" className="w-full justify-start gap-2 h-10 px-2 font-normal">
+                    <ShoppingBag className="h-4 w-4" /> My Orders
+                  </Button>
+                </Link>
+
+                <div className="border-t my-1" />
+
+                <Button
+                  variant="ghost"
+                  className="w-full justify-start gap-2 h-10 px-2 text-red-500 hover:text-red-600 hover:bg-red-50 font-normal"
+                  onClick={() => {
+                    setUserMenuOpen(false);
+                    logout();
+                  }}
+                >
+                  <LogOut className="h-4 w-4" /> Logout
+                </Button>
+              </div>
+            </PopoverContent>
+          </Popover>
         ) : (
           <Link to="/login">
             <Button className="bg-red-500 h-10 px-3 sm:px-6 text-white cursor-pointer hover:bg-red-600">

@@ -23,8 +23,6 @@ const Orders = () => {
     const fetchOrders = async () => {
         try {
             const response = await api.get('/orders/');
-            // Sort orders by id descending (newest first) assuming id increments
-            // or created_at if available
             const sortedOrders = response.data.sort((a, b) => b.id - a.id);
             setOrders(sortedOrders);
             setLoading(false);

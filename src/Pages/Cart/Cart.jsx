@@ -14,50 +14,28 @@ import {
 } from "@/components/ui/table";
 import { Link } from 'react-router-dom';
 
-import { getProvinces } from '@/services/addressService';
+import { useAddress } from '@/context/AddressContext';
 
 const DEFAULT_FOOD_IMAGE = "https://images.pexels.com/photos/1640777/pexels-photo-1640777.jpeg";
 
 const Cart = () => {
     const { cartItems, removeFromCart, updateQuantity, clearCart, getCartTotal, placeOrder } = useCart();
+    const { addresses, selectedAddress, selectAddress } = useAddress();
 
     const getImage = (url) => {
         return url && url.trim() !== '' ? url : DEFAULT_FOOD_IMAGE;
     };
 
-    const [addresses, setAddresses] = useState([]);
-    const [selectedAddressId, setSelectedAddressId] = useState(null);
     const { user } = useAuth();
-
-    // Fetch addresses
-    React.useEffect(() => {
-        const fetchAddresses = async () => {
-            if (user) {
-                try {
-                    const data = await getProvinces();
-                    setAddresses(data);
-                    // Select default address if available
-                    const defaultAddress = data.find(addr => addr.is_default);
-                    if (defaultAddress) {
-                        setSelectedAddressId(defaultAddress.id);
-                    } else if (data.length > 0) {
-                        setSelectedAddressId(data[0].id);
-                    }
-                } catch (error) {
-                    console.error("Failed to fetch addresses", error);
-                }
-            }
-        };
-        fetchAddresses();
-    }, [user]);
+    // No local address fetching logic here anymore
 
     const handlePlaceOrder = async () => {
-        if (!selectedAddressId) {
+        if (!selectedAddress) {
             alert("Please select a delivery address");
             return;
         }
 
-        const result = await placeOrder(selectedAddressId);
+        const result = await placeOrder(selectedAddress.id);
         if (!result.success) {
             alert(result.message);
         }
@@ -161,13 +139,11 @@ const Cart = () => {
                 </Table>
             </div>
 
-            {/* Delivery Address Section */}
             <div className="bg-white rounded-xl shadow-sm p-6 mb-6 border">
                 <h2 className="text-xl font-bold mb-4">Delivery Address</h2>
                 {addresses.length === 0 ? (
                     <div className="text-gray-500">
                         No addresses found.
-                        {/* Note: In a real app we'd open the add address modal here, but simpler to just say go to profile/navbar */}
                         <p className="text-sm mt-2">Please add an address from the Navbar.</p>
                     </div>
                 ) : (
@@ -175,12 +151,12 @@ const Cart = () => {
                         {addresses.map((addr) => (
                             <div
                                 key={addr.id}
-                                className={`border p-4 rounded-lg cursor-pointer transition-colors ${selectedAddressId === addr.id ? 'border-red-500 bg-red-50' : 'hover:border-gray-300'}`}
-                                onClick={() => setSelectedAddressId(addr.id)}
+                                className={`border p-4 rounded-lg cursor-pointer transition-colors ${selectedAddress?.id === addr.id ? 'border-red-500 bg-red-50' : 'hover:border-gray-300'}`}
+                                onClick={() => selectAddress(addr)}
                             >
                                 <div className="flex items-start gap-3">
-                                    <div className={`mt-1 h-4 w-4 rounded-full border border-gray-300 flex items-center justify-center ${selectedAddressId === addr.id ? 'border-red-500' : ''}`}>
-                                        {selectedAddressId === addr.id && <div className="h-2 w-2 rounded-full bg-red-500" />}
+                                    <div className={`mt-1 h-4 w-4 rounded-full border border-gray-300 flex items-center justify-center ${selectedAddress?.id === addr.id ? 'border-red-500' : ''}`}>
+                                        {selectedAddress?.id === addr.id && <div className="h-2 w-2 rounded-full bg-red-500" />}
                                     </div>
                                     <div>
                                         <p className="font-semibold">{addr.label}</p>
@@ -193,7 +169,7 @@ const Cart = () => {
                 )}
             </div>
 
-            {/* Order Summary */}
+
             <div className="bg-gray-50 rounded-xl p-6">
                 <div className="flex justify-between items-center text-xl font-bold">
                     <span>Total</span>
@@ -202,7 +178,7 @@ const Cart = () => {
                 <Button
                     className="w-full mt-4 bg-red-500 hover:bg-red-600 text-white h-12 text-lg"
                     onClick={handlePlaceOrder}
-                    disabled={cartItems.length === 0 || !selectedAddressId}
+                    disabled={cartItems.length === 0 || !selectedAddress}
                 >
                     Proceed to Checkout
                 </Button>

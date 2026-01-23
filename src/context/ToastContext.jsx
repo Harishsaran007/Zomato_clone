@@ -18,7 +18,6 @@ export const ToastProvider = ({ children }) => {
         const id = Date.now();
         setToasts((prev) => [...prev, { id, message, type }]);
 
-        // Auto remove after 2 seconds based on user request ("disappearing 2 seconds")
         setTimeout(() => {
             removeToast(id);
         }, 2000);
@@ -31,7 +30,6 @@ export const ToastProvider = ({ children }) => {
     return (
         <ToastContext.Provider value={{ showToast, removeToast }}>
             {children}
-            {/* Toast Container */}
             <div className="fixed bottom-10 left-1/2 transform -translate-x-1/2 z-[9999] flex flex-col gap-3 pointer-events-none">
                 {toasts.map((toast) => (
                     <div
@@ -44,10 +42,6 @@ export const ToastProvider = ({ children }) => {
                         <div className="flex flex-col">
                             <span className="text-sm font-medium">{toast.message}</span>
                         </div>
-                        {/* Option to close manually if needed, though 2s is short */}
-                        {/* <button onClick={() => removeToast(toast.id)} className="text-zinc-400 hover:text-white">
-                            <X size={16} />
-                        </button> */}
                     </div>
                 ))}
             </div>

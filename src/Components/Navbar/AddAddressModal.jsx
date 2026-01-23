@@ -115,7 +115,7 @@ const AddAddressModal = ({ isOpen, onClose, onAddressAdded, addressToEdit, onAdd
                             required
                         />
                     </div>
-                    {/* For now, text inputs for lat/long as per user request flow implied manual or later automation */}
+                    
                     <div className="grid grid-cols-4 items-center gap-4">
                         <label htmlFor="latitude" className="text-right text-sm font-medium">
                             Lat

@@ -3,8 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import logo from '../../assets/zomato.png'; // Assuming logo exists here or use a text
-// Using a red background style similar to the reference image for the header part
+
 
 const Login = () => {
     const [username, setUsername] = useState('');
@@ -33,11 +32,11 @@ const Login = () => {
     return (
         <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50">
 
-            {/* Header Section mimicking the App feel */}
+
             <div className="w-full max-w-md bg-white rounded-xl shadow-lg overflow-hidden">
                 <div className="bg-red-500 h-32 flex items-center justify-center relative">
                     <h1 className="text-4xl font-extrabold text-white tracking-tight italic">zomato</h1>
-                    {/* Decorative circles/elements if needed to match image perfectly, keeping it clean for now */}
+
                 </div>
 
                 <div className="p-8">

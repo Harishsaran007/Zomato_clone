@@ -10,6 +10,7 @@ import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
 import { CartProvider } from './context/CartContext';
 import { AuthProvider } from './context/AuthContext';
 import { ToastProvider } from './context/ToastContext';
+import { AddressProvider } from './context/AddressContext';
 
 const Layout = () => {
   const location = useLocation();
@@ -35,11 +36,13 @@ const App = () => {
   return (
     <AuthProvider>
       <ToastProvider>
-        <CartProvider>
-          <BrowserRouter>
-            <Layout />
-          </BrowserRouter>
-        </CartProvider>
+        <AddressProvider>
+          <CartProvider>
+            <BrowserRouter>
+              <Layout />
+            </BrowserRouter>
+          </CartProvider>
+        </AddressProvider>
       </ToastProvider>
     </AuthProvider>
   )

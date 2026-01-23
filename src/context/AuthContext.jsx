@@ -24,7 +24,7 @@ export const AuthProvider = ({ children }) => {
             const parsedToken = JSON.parse(token);
             let parsedUser = savedUser ? JSON.parse(savedUser) : {};
 
-            // Try to extract user_id from token if missing
+
             if (!parsedUser.id && parsedToken.access) {
                 try {
                     const base64Url = parsedToken.access.split('.')[1];
@@ -60,7 +60,7 @@ export const AuthProvider = ({ children }) => {
 
             const { access, refresh } = response.data;
 
-            // Decode token to get user_id
+
             let userId = null;
             try {
                 const base64Url = access.split('.')[1];
@@ -94,7 +94,6 @@ export const AuthProvider = ({ children }) => {
 
     const signup = async (userData) => {
         try {
-            // The signup endpoint allows creating a user
             await axios.post('/api/users/', userData);
             return { success: true };
         } catch (error) {

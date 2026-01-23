@@ -34,7 +34,6 @@ const AccountDetailsModal = ({ isOpen, onClose }) => {
         if (isOpen) {
             fetchUserDetails();
         } else {
-            // Reset state when closed
             setUserDetails(null);
             setError(null);
         }

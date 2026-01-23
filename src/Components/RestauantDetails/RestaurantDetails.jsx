@@ -30,7 +30,7 @@ const RestaurantDetails = () => {
         const fetchData = async () => {
             try {
                 setLoading(true);
-                // Fetch hotel details and menu in parallel
+                
                 const [hotelRes, menuRes] = await Promise.all([
                     axios.get(`/api/hotels/${id}/`),
                     axios.get(`/api/hotels/${id}/foods/`)
@@ -90,7 +90,6 @@ const RestaurantDetails = () => {
             <div className="mb-8 space-y-2">
                 <h2 className="text-2xl font-semibold">{hotel.name}</h2>
                 <p className="text-gray-600">{hotel.address} | {hotel.city}</p>
-                {/* API doesn't provide rating yet, keeping placeholder or could be removed */}
                 <p> 4.2 &#9733;&#9733;&#9733;&#9733;&#9734;</p>
                 <p> 30 mins </p>
             </div>

@@ -8,8 +8,8 @@ const Signup = () => {
     const [formData, setFormData] = useState({
         username: '',
         email: '',
-        phone_number: '', // API expects this
-        address: '',      // API expects this
+        phone_number: '', 
+        address: '',      
         password: ''
     });
     const [error, setError] = useState('');
@@ -24,7 +24,6 @@ const Signup = () => {
         e.preventDefault();
         setError('');
 
-        // Basic validation
         if (!formData.username || !formData.password || !formData.email) {
             setError('Please fill in all required fields');
             return;

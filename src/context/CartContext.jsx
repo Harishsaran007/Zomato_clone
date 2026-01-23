@@ -124,7 +124,6 @@ export const CartProvider = ({ children }) => {
                 throw new Error("Please select a delivery address");
             }
 
-            // Parse saved user to get ID
             let userId = null;
             if (savedUser) {
                 const parsedUser = JSON.parse(savedUser);
@@ -135,16 +134,8 @@ export const CartProvider = ({ children }) => {
                 throw new Error("User ID not found. Please logout and login again.");
             }
 
-            // Note: Hotel ID is missing in Cart API response.
-            // Using a fallback or user needs to ensure they order from one restaurant context if possible.
-            // Attempting to extract if available or using stored fallback if we had one.
-            // For now, sending null or 1 as temporary if not found to avoid crash?
-            // Or better, let's assume the backend might handle it or we can't send it.
-            // But api_examples requirement says hotel is needed.
-            // Let's try to pass null if undefined.
-            const hotelId = cartItems[0]?.hotel || null; // API might return hotel id in some field?
+            const hotelId = cartItems[0]?.hotel || null; 
 
-            // 1. Create Order
             const orderData = {
                 user: userId,
                 hotel: hotelId,
@@ -159,15 +150,13 @@ export const CartProvider = ({ children }) => {
             console.log("Order created:", orderResponse.data);
             const orderId = orderResponse.data.id;
 
-            // Clear cart immediately after successful order creation
             try {
                 await clearCart();
             } catch (clearErr) {
                 console.warn("Failed to clear cart after order:", clearErr);
-                // Continue with payment even if clear cart fails marginally
+
             }
 
-            // 2. Initiate Payment
             console.log("Fetching payment link for order:", orderId);
             const paymentResponse = await api.get(`/orders/${orderId}/pay/`);
             console.log("Payment response:", paymentResponse.data);
@@ -175,7 +164,6 @@ export const CartProvider = ({ children }) => {
             const paymentUrl = paymentResponse.data.short_url || paymentResponse.data.pay_url;
 
             if (paymentUrl) {
-                // Redirect to payment
                 window.location.href = paymentUrl;
             } else {
                 throw new Error("Failed to get payment URL from server");
@@ -186,10 +174,10 @@ export const CartProvider = ({ children }) => {
         } catch (error) {
             console.error("Order placement failed:", error);
             console.error("Error response data:", error.response?.data);
-            // Check for specific backend errors
+
             let message = "Failed to place order";
             if (error.response?.data) {
-                // Handle DRF validation errors
+
                 const errorData = error.response.data;
                 if (typeof errorData === 'object') {
                     message = Object.entries(errorData)

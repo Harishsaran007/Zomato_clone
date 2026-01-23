@@ -4,7 +4,6 @@ const api = axios.create({
     baseURL: '/api',
 });
 
-// Add a request interceptor to add the auth token to every request
 api.interceptors.request.use(
     (config) => {
         const token = localStorage.getItem('zomato-token');
@@ -19,7 +18,6 @@ api.interceptors.request.use(
     }
 );
 
-// Add a response interceptor to handle token expiration (optional but recommended)
 api.interceptors.response.use(
     (response) => {
         return response;
@@ -27,7 +25,7 @@ api.interceptors.response.use(
     async (error) => {
         const originalRequest = error.config;
 
-        // If error is 401 and we haven't already tried to refresh
+        
         if (error.response.status === 401 && !originalRequest._retry) {
             originalRequest._retry = true;
 
