@@ -2,9 +2,10 @@ import React, { useState, useEffect } from 'react'
 import Restaurant from '@/Components/Restaurant/Restaurant'
 import Deliver from '@/Components/Deliver/Deliver';
 import axios from 'axios';
+import restaurant_image from "../../assets/Restaurant1.jpg"
 
 // Default placeholder image for hotels without an image
-const DEFAULT_HOTEL_IMAGE = "https://images.pexels.com/photos/1581384/pexels-photo-1581384.jpeg";
+const DEFAULT_HOTEL_IMAGE = restaurant_image;
 
 const Home = () => {
   const [hotels, setHotels] = useState([]);

@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import api from '@/utils/api';
 import { useAuth } from './AuthContext';
+import { useToast } from './ToastContext';
 
 
 const CartContext = createContext();
@@ -15,6 +16,7 @@ export const useCart = () => {
 
 export const CartProvider = ({ children }) => {
     const { user } = useAuth();
+    const { showToast } = useToast();
     const [cartItems, setCartItems] = useState([]);
 
     const fetchCart = async () => {
@@ -53,9 +55,11 @@ export const CartProvider = ({ children }) => {
                 quantity: 1
             });
             fetchCart();
+            return true;
         } catch (error) {
             console.error("Failed to add to cart:", error);
-            alert("Failed to add to cart");
+            showToast("Failed to add to cart", "error");
+            return false;
         }
     };
 
@@ -154,6 +158,14 @@ export const CartProvider = ({ children }) => {
             const orderResponse = await api.post('/orders/', orderData);
             console.log("Order created:", orderResponse.data);
             const orderId = orderResponse.data.id;
+
+            // Clear cart immediately after successful order creation
+            try {
+                await clearCart();
+            } catch (clearErr) {
+                console.warn("Failed to clear cart after order:", clearErr);
+                // Continue with payment even if clear cart fails marginally
+            }
 
             // 2. Initiate Payment
             console.log("Fetching payment link for order:", orderId);

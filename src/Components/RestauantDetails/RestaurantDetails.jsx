@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/table"
 import { Button } from '../ui/button'
 import { useCart } from '@/context/CartContext'
+import { useToast } from '@/context/ToastContext'
 
 const DEFAULT_HOTEL_IMAGE = "https://images.pexels.com/photos/1581384/pexels-photo-1581384.jpeg";
 const DEFAULT_FOOD_IMAGE = "https://images.pexels.com/photos/1640777/pexels-photo-1640777.jpeg";
@@ -19,6 +20,7 @@ const DEFAULT_FOOD_IMAGE = "https://images.pexels.com/photos/1640777/pexels-phot
 const RestaurantDetails = () => {
     const { id } = useParams();
     const { addToCart } = useCart();
+    const { showToast } = useToast();
     const [hotel, setHotel] = useState(null);
     const [menu, setMenu] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -54,8 +56,8 @@ const RestaurantDetails = () => {
         return url && url.trim() !== '' ? url : defaultImg;
     };
 
-    const handleAddToCart = (item) => {
-        addToCart({
+    const handleAddToCart = async (item) => {
+        const success = await addToCart({
             id: item.id,
             name: item.name,
             price: item.price,
@@ -63,6 +65,9 @@ const RestaurantDetails = () => {
             hotelId: hotel.id,
             hotelName: hotel.name,
         });
+        if (success) {
+            showToast(`${item.name} added to cart`, 'success');
+        }
     };
 
     if (loading) {

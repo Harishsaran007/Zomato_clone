@@ -9,6 +9,7 @@ import Navbar from './Components/Navbar/Navbar';
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
 import { CartProvider } from './context/CartContext';
 import { AuthProvider } from './context/AuthContext';
+import { ToastProvider } from './context/ToastContext';
 
 const Layout = () => {
   const location = useLocation();
@@ -33,11 +34,13 @@ const Layout = () => {
 const App = () => {
   return (
     <AuthProvider>
-      <CartProvider>
-        <BrowserRouter>
-          <Layout />
-        </BrowserRouter>
-      </CartProvider>
+      <ToastProvider>
+        <CartProvider>
+          <BrowserRouter>
+            <Layout />
+          </BrowserRouter>
+        </CartProvider>
+      </ToastProvider>
     </AuthProvider>
   )
 }
