@@ -3,7 +3,7 @@ import { useCart } from '@/context/CartContext';
 import { useAuth } from '@/context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
-import { Button } from '@/components/ui/Button';
+import { Button } from '@/Components/ui/Button';
 import {
     Table,
     TableBody,
@@ -11,7 +11,7 @@ import {
     TableHead,
     TableHeader,
     TableRow,
-} from "@/components/ui/table";
+} from "@/Components/ui/table";
 import { Link } from 'react-router-dom';
 
 import { useAddress } from '@/context/AddressContext';

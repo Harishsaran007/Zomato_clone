@@ -7,8 +7,8 @@ import {
     TableHead,
     TableHeader,
     TableRow,
-} from "@/components/ui/table";
-import { Button } from '@/components/ui/Button';
+} from "@/Components/ui/table";
+import { Button } from '@/Components/ui/Button';
 import { Link } from 'react-router-dom';
 
 const Orders = () => {

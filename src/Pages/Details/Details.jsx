@@ -1,4 +1,4 @@
-import RestaurantDetails from '@/components/RestauantDetails/RestaurantDetails'
+import RestaurantDetails from '@/Components/RestauantDetails/RestaurantDetails'
 import React from 'react'
 
 

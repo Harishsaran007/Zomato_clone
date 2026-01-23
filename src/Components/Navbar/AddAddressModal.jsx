@@ -6,9 +6,9 @@ import {
     DialogTitle,
     DialogTrigger,
     DialogFooter,
-} from "@/components/ui/dialog";
-import { Button } from '@/components/ui/Button';
-import { Input } from "@/components/ui/input";
+} from "@/Components/ui/dialog";
+import { Button } from '@/Components/ui/Button';
+import { Input } from "@/Components/ui/input";
 
 const AddAddressModal = ({ isOpen, onClose, onAddressAdded, addressToEdit, onAddressUpdated }) => {
     const [formData, setFormData] = useState({

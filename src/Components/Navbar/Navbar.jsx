@@ -8,7 +8,7 @@ import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/components/ui/popover"
+} from "@/Components/ui/popover"
 import {
   Command,
   CommandDialog,
@@ -19,9 +19,9 @@ import {
   CommandList,
   CommandSeparator,
   CommandShortcut,
-} from "@/components/ui/Command"
+} from "@/Components/ui/Command"
 import { Button } from '../ui/Button'
-import { Input } from "@/components/ui/input"
+import { Input } from "@/Components/ui/input"
 import { useCart } from '@/context/CartContext';
 import { useAuth } from '@/context/AuthContext';
 import { useAddress } from '@/context/AddressContext';

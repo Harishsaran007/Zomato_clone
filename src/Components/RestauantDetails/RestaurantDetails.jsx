@@ -9,7 +9,7 @@ import {
     TableHead,
     TableHeader,
     TableRow,
-} from "@/components/ui/table"
+} from "@/Components/ui/table"
 import { Button } from '../ui/Button'
 import { useCart } from '@/context/CartContext'
 import { useToast } from '@/context/ToastContext'
