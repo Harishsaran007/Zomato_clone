@@ -19,8 +19,8 @@ import {
   CommandList,
   CommandSeparator,
   CommandShortcut,
-} from "@/Components/ui/Command"
-import { Button } from '../ui/Button'
+} from "@/Components/ui/command"
+import { Button } from '../ui/button'
 import { Input } from "@/Components/ui/input"
 import { useCart } from '@/context/CartContext';
 import { useAuth } from '@/context/AuthContext';

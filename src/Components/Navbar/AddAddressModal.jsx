@@ -7,7 +7,7 @@ import {
     DialogTrigger,
     DialogFooter,
 } from "@/Components/ui/dialog";
-import { Button } from '@/Components/ui/Button';
+import { Button } from '@/Components/ui/button';
 import { Input } from "@/Components/ui/input";
 
 const AddAddressModal = ({ isOpen, onClose, onAddressAdded, addressToEdit, onAddressUpdated }) => {
