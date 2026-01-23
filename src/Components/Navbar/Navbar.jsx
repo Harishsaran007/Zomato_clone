@@ -27,12 +27,14 @@ import { useAuth } from '@/context/AuthContext';
 import { getProvinces, addAddress, updateAddress, deleteAddress } from '../../services/addressService';
 import { MoreVertical, Edit2, Trash2 } from 'lucide-react';
 import AddAddressModal from './AddAddressModal';
+import AccountDetailsModal from './AccountDetailsModal';
 
 
 const Navbar = () => {
   const [location, setLocation] = useState("Location");
   const [open, setOpen] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
+  const [accountModalOpen, setAccountModalOpen] = useState(false);
   const [addresses, setAddresses] = useState([]);
   const [addressToEdit, setAddressToEdit] = useState(null);
 
@@ -209,9 +211,14 @@ const Navbar = () => {
           onAddressUpdated={handleAddressUpdated}
         />
 
+        <AccountDetailsModal
+          isOpen={accountModalOpen}
+          onClose={() => setAccountModalOpen(false)}
+        />
+
         <div className="w-full relative">
           <Input
-            placeholder="Search for restaurant, cuisine or a dish"
+            placeholder="Search for restaurant or a dish"
             className="w-full h-10 min-w-0 rounded-lg shadow-sm"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
@@ -231,6 +238,7 @@ const Navbar = () => {
                       onClick={() => {
                         navigate(`/restaurant/${hotel.id}`);
                         setShowResults(false);
+                        setSearchQuery("");
                       }}
                     >
                       <img src={hotel.image_url || "https://images.pexels.com/photos/1581384/pexels-photo-1581384.jpeg"} alt={hotel.name} className="h-10 w-10 rounded-md object-cover" />
@@ -258,6 +266,7 @@ const Navbar = () => {
                         // Can't navigate to ID without ID.
                         alert(`Found ${food.name} (${food.food_type === 'veg' ? 'Veg' : 'Non-veg'}). Visit restaurant to order.`);
                         setShowResults(false);
+                        setSearchQuery("");
                       }}
                     >
                       <img src={food.image || "https://images.pexels.com/photos/1640777/pexels-photo-1640777.jpeg"} alt={food.name} className="h-10 w-10 rounded-md object-cover" />
@@ -287,8 +296,11 @@ const Navbar = () => {
 
         {user ? (
           <div className="flex items-center gap-3">
-            <span className="text-sm font-semibold truncate max-w-[100px] hidden sm:block">
-              {user.username}
+            <span
+              className="text-sm font-semibold truncate max-w-[100px] hidden sm:block cursor-pointer hover:underline"
+              onClick={() => setAccountModalOpen(true)}
+            >
+              {user.username[0].toUpperCase()}
             </span>
             <Link to="/orders">
               <Button variant="ghost" className="h-10 px-3 text-gray-700 hover:text-black hover:bg-gray-100">
