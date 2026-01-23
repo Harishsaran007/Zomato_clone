@@ -5,7 +5,7 @@ import Cart from './Pages/Cart/Cart'
 import Login from './Pages/Auth/Login'
 import Signup from './Pages/Auth/Signup'
 import Orders from './Pages/Orders/Orders'
-import Navbar from './Components/Navbar/Navbar';
+import Navbar from './components/Navbar/Navbar';
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
 import { CartProvider } from './context/CartContext';
 import { AuthProvider } from './context/AuthContext';

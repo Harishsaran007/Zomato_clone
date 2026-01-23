@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
-import Restaurant from '@/Components/Restaurant/Restaurant'
-import Deliver from '@/Components/Deliver/Deliver';
+import Restaurant from '@/components/Restaurant/Restaurant'
+import Deliver from '@/components/Deliver/Deliver';
 import axios from 'axios';
 import restaurant_image from "../../assets/Restaurant1.jpg"
 

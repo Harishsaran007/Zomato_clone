@@ -10,7 +10,7 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table"
-import { Button } from '../ui/button'
+import { Button } from '../ui/Button'
 import { useCart } from '@/context/CartContext'
 import { useToast } from '@/context/ToastContext'
 
