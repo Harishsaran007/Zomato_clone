@@ -22,8 +22,17 @@ const Orders = () => {
 
     const fetchOrders = async () => {
         try {
-            const response = await api.get('/orders/');
-            const sortedOrders = response.data.sort((a, b) => b.id - a.id);
+            const response = await api.get('/api/orders/');
+            let ordersData = [];
+            if (Array.isArray(response.data)) {
+                ordersData = response.data;
+            } else if (response.data && Array.isArray(response.data.results)) {
+                ordersData = response.data.results;
+            } else {
+                ordersData = [];
+            }
+
+            const sortedOrders = ordersData.sort((a, b) => b.id - a.id);
             setOrders(sortedOrders);
             setLoading(false);
         } catch (err) {

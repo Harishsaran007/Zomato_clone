@@ -21,16 +21,26 @@ export const CartProvider = ({ children }) => {
 
     const fetchCart = async () => {
         try {
-            const response = await api.get('/cart/');
-            // Map API response to match internal structure expected by components
-            const mappedItems = response.data.map(item => ({
-                id: item.id, // This is now the Cart Item ID
+            const response = await api.get('/api/cart/');
+            let cartData = [];
+            if (Array.isArray(response.data)) {
+                cartData = response.data;
+            } else if (response.data && Array.isArray(response.data.results)) {
+                cartData = response.data.results;
+            } else if (response.data && Array.isArray(response.data.cart_items)) {
+                cartData = response.data.cart_items;
+            } else {
+                console.warn("Unexpected cart response format:", response.data);
+                cartData = [];
+            }
+
+            const mappedItems = cartData.map(item => ({
+                id: item.id,
                 name: item.food_name,
                 image: item.food_image,
                 price: item.food_price,
                 quantity: item.quantity,
                 total_price: item.total_price,
-                // store original data if needed
                 ...item
             }));
             setCartItems(mappedItems);
@@ -39,7 +49,6 @@ export const CartProvider = ({ children }) => {
         }
     };
 
-    // Load cart when user logs in or mounts
     useEffect(() => {
         if (user) {
             fetchCart();
@@ -50,8 +59,8 @@ export const CartProvider = ({ children }) => {
 
     const addToCart = async (item) => {
         try {
-            await api.post('/cart/', {
-                food: item.id, // Item ID from RestaurantDetails is the Food ID
+            await api.post('/api/cart/', {
+                food: item.id,
                 quantity: 1
             });
             fetchCart();
@@ -65,7 +74,7 @@ export const CartProvider = ({ children }) => {
 
     const removeFromCart = async (itemId) => {
         try {
-            await api.delete(`/cart/${itemId}/`);
+            await api.delete(`/api/cart/${itemId}/`);
             fetchCart();
         } catch (error) {
             console.error("Failed to remove from cart:", error);
@@ -78,7 +87,7 @@ export const CartProvider = ({ children }) => {
             return;
         }
         try {
-            await api.patch(`/cart/${itemId}/`, {
+            await api.patch(`/api/cart/${itemId}/`, {
                 quantity: newQuantity
             });
             fetchCart();
@@ -89,8 +98,7 @@ export const CartProvider = ({ children }) => {
 
     const clearCart = async () => {
         try {
-            // API doesn't have a clear endpoint, delete all items parallelly
-            await Promise.all(cartItems.map(item => api.delete(`/cart/${item.id}/`)));
+            await Promise.all(cartItems.map(item => api.delete(`/api/cart/${item.id}/`)));
             fetchCart();
         } catch (error) {
             console.error("Failed to clear cart:", error);
@@ -134,7 +142,7 @@ export const CartProvider = ({ children }) => {
                 throw new Error("User ID not found. Please logout and login again.");
             }
 
-            const hotelId = cartItems[0]?.hotel || null; 
+            const hotelId = cartItems[0]?.hotel || null;
 
             const orderData = {
                 user: userId,
@@ -146,7 +154,7 @@ export const CartProvider = ({ children }) => {
             };
 
             console.log("Creating order with data:", orderData);
-            const orderResponse = await api.post('/orders/', orderData);
+            const orderResponse = await api.post('/api/orders/', orderData);
             console.log("Order created:", orderResponse.data);
             const orderId = orderResponse.data.id;
 
@@ -158,7 +166,7 @@ export const CartProvider = ({ children }) => {
             }
 
             console.log("Fetching payment link for order:", orderId);
-            const paymentResponse = await api.get(`/orders/${orderId}/pay/`);
+            const paymentResponse = await api.get(`/api/orders/${orderId}/pay/`);
             console.log("Payment response:", paymentResponse.data);
 
             const paymentUrl = paymentResponse.data.short_url || paymentResponse.data.pay_url;

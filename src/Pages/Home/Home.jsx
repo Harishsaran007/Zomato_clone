@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import Restaurant from '@/Components/Restaurant/Restaurant'
 import Deliver from '@/Components/Deliver/Deliver';
-import axios from 'axios';
+import api from '@/utils/api';
 import restaurant_image from "../../assets/Restaurant1.jpg"
 
 
@@ -14,8 +14,15 @@ const Home = () => {
     const fetchHotels = async () => {
       try {
         setLoading(true);
-        const response = await axios.get('/api/hotels/');
-        setHotels(response.data);
+        const response = await api.get('/api/hotels/');
+        if (Array.isArray(response.data)) {
+          setHotels(response.data);
+        } else if (response.data && Array.isArray(response.data.results)) {
+          setHotels(response.data.results);
+        } else {
+          console.error("Unexpected API response format:", response.data);
+          setHotels([]);
+        }
         setError(null);
       } catch (err) {
         console.error('Error fetching hotels:', err);
@@ -27,7 +34,6 @@ const Home = () => {
 
     fetchHotels();
   }, []);
-
 
   const getHotelImage = (imageUrl) => {
     return imageUrl && imageUrl.trim() !== '' ? imageUrl : restaurant_image;
@@ -59,7 +65,7 @@ const Home = () => {
     <div>
       <Deliver />
       <div className="px-6 py-6 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-        {hotels.filter(hotel => hotel.is_active).map((hotel) => (
+        {Array.isArray(hotels) && hotels.filter(hotel => hotel.is_active).map((hotel) => (
           <Restaurant
             key={hotel.id}
             id={hotel.id}

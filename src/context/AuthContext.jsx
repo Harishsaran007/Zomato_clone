@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '@/utils/api';
 
 const AuthContext = createContext();
 
@@ -46,14 +46,14 @@ export const AuthProvider = ({ children }) => {
             if (savedUser || parsedUser.id) {
                 setUser(parsedUser);
             }
-            axios.defaults.headers.common['Authorization'] = `Bearer ${parsedToken.access}`;
+            api.defaults.headers.common['Authorization'] = `Bearer ${parsedToken.access}`;
         }
         setLoading(false);
     }, []);
 
     const login = async (username, password) => {
         try {
-            const response = await axios.post('/token/', {
+            const response = await api.post('/token/', {
                 username,
                 password
             });
@@ -79,7 +79,7 @@ export const AuthProvider = ({ children }) => {
             localStorage.setItem('zomato-token', JSON.stringify({ access, refresh }));
             localStorage.setItem('zomato-user', JSON.stringify(userData));
 
-            axios.defaults.headers.common['Authorization'] = `Bearer ${access}`;
+            api.defaults.headers.common['Authorization'] = `Bearer ${access}`;
             setUser(userData);
 
             return { success: true };
@@ -94,7 +94,7 @@ export const AuthProvider = ({ children }) => {
 
     const signup = async (userData) => {
         try {
-            await axios.post('/api/users/', userData);
+            await api.post('/api/users/', userData);
             return { success: true };
         } catch (error) {
             console.error("Signup failed", error);
@@ -108,7 +108,7 @@ export const AuthProvider = ({ children }) => {
     const logout = () => {
         localStorage.removeItem('zomato-token');
         localStorage.removeItem('zomato-user');
-        delete axios.defaults.headers.common['Authorization'];
+        delete api.defaults.headers.common['Authorization'];
         setUser(null);
     };
 

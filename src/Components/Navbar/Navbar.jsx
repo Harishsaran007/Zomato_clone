@@ -2,7 +2,7 @@ import React from 'react'
 import logo from '../../assets/zomato.png'
 import cart from '../../assets/shopping-cart.png'
 import { Link, useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '@/utils/api';
 import { useState } from "react";
 import {
   Popover,
@@ -48,19 +48,32 @@ const Navbar = () => {
   const { user, logout } = useAuth();
   const cartItemCount = getCartItemCount();
 
-  // Search Effect with Debounce
   React.useEffect(() => {
     const timer = setTimeout(async () => {
       if (searchQuery.trim().length > 0) {
         try {
           const [hotelsRes, foodsRes] = await Promise.all([
-            axios.get(`/api/hotels/?search=${searchQuery}`),
-            axios.get(`/api/foods/?search=${searchQuery}`)
+            api.get(`/api/hotels/?search=${searchQuery}`),
+            api.get(`/api/foods/?search=${searchQuery}`)
           ]);
 
+          let hotelsData = [];
+          if (Array.isArray(hotelsRes.data)) {
+            hotelsData = hotelsRes.data;
+          } else if (hotelsRes.data && Array.isArray(hotelsRes.data.results)) {
+            hotelsData = hotelsRes.data.results;
+          }
+
+          let foodsData = [];
+          if (Array.isArray(foodsRes.data)) {
+            foodsData = foodsRes.data;
+          } else if (foodsRes.data && Array.isArray(foodsRes.data.results)) {
+            foodsData = foodsRes.data.results;
+          }
+
           setSearchResults({
-            hotels: hotelsRes.data,
-            foods: foodsRes.data
+            hotels: hotelsData,
+            foods: foodsData
           });
           setShowResults(true);
         } catch (error) {
@@ -70,7 +83,7 @@ const Navbar = () => {
         setSearchResults({ hotels: [], foods: [] });
         setShowResults(false);
       }
-    }, 500); // 500ms debounce
+    }, 500);
 
     return () => clearTimeout(timer);
   }, [searchQuery]);
@@ -127,7 +140,7 @@ const Navbar = () => {
               <CommandList className="max-h-60 overflow-y-auto">
                 <CommandEmpty>No address found.</CommandEmpty>
                 <CommandGroup heading="Saved Addresses">
-                  {addresses.map((addr) => (
+                  {Array.isArray(addresses) && addresses.map((addr) => (
                     <CommandItem
                       key={addr.id}
                       value={`${addr.label} ${addr.city}`}
@@ -230,7 +243,7 @@ const Navbar = () => {
                       key={food.id}
                       className="flex items-center gap-3 p-2 hover:bg-gray-50 cursor-pointer rounded-md"
                       onClick={() => {
-                        
+
                         alert(`Found ${food.name} (${food.food_type === 'veg' ? 'Veg' : 'Non-veg'}). Visit restaurant to order.`);
                         setShowResults(false);
                         setSearchQuery("");

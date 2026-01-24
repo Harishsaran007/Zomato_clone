@@ -1,7 +1,8 @@
-import axios from 'axios';
+const baseURL = import.meta.env.VITE_API_URL || 'https://render-test-gspe.onrender.com';
+import axios from "axios";
 
 const api = axios.create({
-    baseURL: '/api',
+    baseURL: baseURL,
 });
 
 api.interceptors.request.use(
@@ -25,7 +26,7 @@ api.interceptors.response.use(
     async (error) => {
         const originalRequest = error.config;
 
-        
+
         if (error.response.status === 401 && !originalRequest._retry) {
             originalRequest._retry = true;
 
@@ -33,39 +34,30 @@ api.interceptors.response.use(
                 const token = localStorage.getItem('zomato-token');
                 if (token) {
                     const parsedToken = JSON.parse(token);
-                    const response = await axios.post('/token/refresh/', {
+                    const response = await axios.post(`${api.defaults.baseURL}/token/refresh/`, {
                         refresh: parsedToken.refresh
                     });
 
                     if (response.status === 200) {
-                        const { access, refresh } = response.data;
-
-                        // Update local storage
-                        // Some refresh endpoints return new refresh token, some don't. 
-                        // Assuming django-simplejwt returns access. 
-                        // If it returns both, update both. 
+                        const { access, refresh } = response.data; 
 
                         const newToken = {
                             ...parsedToken,
                             access: access,
-                            // if refresh is returned, update it too
+                            
                             ...(refresh && { refresh })
                         };
 
                         localStorage.setItem('zomato-token', JSON.stringify(newToken));
 
-                        // Retry the original request
                         axios.defaults.headers.common['Authorization'] = `Bearer ${access}`;
                         originalRequest.headers['Authorization'] = `Bearer ${access}`;
                         return api(originalRequest);
                     }
                 }
             } catch (refreshError) {
-                // Refresh failed - redirect to login or handle logout
                 localStorage.removeItem('zomato-token');
                 localStorage.removeItem('zomato-user');
-                // You might want to redirect to login page here or emit an event
-                // window.location.href = '/login'; 
             }
         }
         return Promise.reject(error);

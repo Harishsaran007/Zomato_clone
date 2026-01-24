@@ -57,7 +57,7 @@ const AddAddressModal = ({ isOpen, onClose, onAddressAdded, addressToEdit, onAdd
             } else {
                 await onAddressAdded(formData);
             }
-            onClose(); // Close modal on success
+            onClose(); 
             setFormData({ label: '', address_line: '', city: '', latitude: '', longitude: '', is_default: false }); // Reset form
         } catch (error) {
             console.error("Failed to save address", error);

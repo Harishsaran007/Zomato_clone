@@ -5,7 +5,7 @@ import {
     DialogHeader,
     DialogTitle,
 } from "@/Components/ui/dialog";
-import axios from 'axios';
+import api from '@/utils/api';
 import { useAuth } from '@/context/AuthContext';
 
 const AccountDetailsModal = ({ isOpen, onClose }) => {
@@ -19,8 +19,14 @@ const AccountDetailsModal = ({ isOpen, onClose }) => {
             if (isOpen && user?.id) {
                 setLoading(true);
                 try {
-                    const response = await axios.get(`/api/users/${user.id}/`);
-                    setUserDetails(response.data);
+                    const response = await api.get(`/api/users/${user.id}/`);
+                    let userData = response.data;
+                    if (Array.isArray(response.data)) {
+                        userData = response.data[0];
+                    } else if (response.data && Array.isArray(response.data.results)) {
+                        userData = response.data.results[0];
+                    }
+                    setUserDetails(userData);
                     setError(null);
                 } catch (err) {
                     console.error("Failed to fetch user details:", err);

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { useParams } from 'react-router-dom'
-import axios from 'axios'
+import api from '@/utils/api'
 import {
     Table,
     TableBody,
@@ -13,9 +13,8 @@ import {
 import { Button } from '../ui/button'
 import { useCart } from '@/context/CartContext'
 import { useToast } from '@/context/ToastContext'
-
-const DEFAULT_HOTEL_IMAGE = "https://images.pexels.com/photos/1581384/pexels-photo-1581384.jpeg";
-const DEFAULT_FOOD_IMAGE = "https://images.pexels.com/photos/1640777/pexels-photo-1640777.jpeg";
+import hotel_image from '../../assets/Restaurant1.jpg'
+import food_image from '../../assets/food4.jpg'
 
 const RestaurantDetails = () => {
     const { id } = useParams();
@@ -30,14 +29,21 @@ const RestaurantDetails = () => {
         const fetchData = async () => {
             try {
                 setLoading(true);
-                
+
                 const [hotelRes, menuRes] = await Promise.all([
-                    axios.get(`/api/hotels/${id}/`),
-                    axios.get(`/api/hotels/${id}/foods/`)
+                    api.get(`/api/hotels/${id}/`),
+                    api.get(`/api/hotels/${id}/foods/`)
                 ]);
 
                 setHotel(hotelRes.data);
-                setMenu(menuRes.data);
+
+                let menuData = [];
+                if (Array.isArray(menuRes.data)) {
+                    menuData = menuRes.data;
+                } else if (menuRes.data && Array.isArray(menuRes.data.results)) {
+                    menuData = menuRes.data.results;
+                }
+                setMenu(menuData);
                 setError(null);
             } catch (err) {
                 console.error('Error fetching restaurant details:', err);
@@ -82,7 +88,7 @@ const RestaurantDetails = () => {
         <div className="max-w-6xl mx-auto px-6 py-6">
             <h1 className='text-3xl font-bold mb-6'>Restaurant Details</h1>
             <img
-                src={getImage(hotel.image_url, DEFAULT_HOTEL_IMAGE)}
+                src={getImage(hotel.image_url, hotel_image)}
                 alt={hotel.name}
                 className='w-full h-72 object-cover rounded-xl mb-6'
             />
@@ -110,7 +116,7 @@ const RestaurantDetails = () => {
                         <TableRow key={item.id}>
                             <TableCell >
                                 <img
-                                    src={getImage(item.image, DEFAULT_FOOD_IMAGE)}
+                                    src={getImage(item.image, food_image)}
                                     alt={item.name}
                                     className="w-16 h-16 rounded-md object-cover"
                                 />
