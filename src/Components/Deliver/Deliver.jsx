@@ -6,7 +6,7 @@ import { Button } from '../ui/button'
 const Deliver = () => {
   return (
     <div
-      className="w-full h-[300px] relative bg-cover bg-[center_70%]"
+      className="w-full sm:h-[300px] h-[150px] relative bg-cover bg-[center_70%]"
       style={{ backgroundImage: `url(${img2})` }}>
     </div>
   )

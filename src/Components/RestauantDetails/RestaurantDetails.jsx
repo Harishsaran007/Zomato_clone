@@ -36,7 +36,7 @@ const RestaurantDetails = () => {
                 ]);
 
                 setHotel(hotelRes.data);
-
+                
                 let menuData = [];
                 if (Array.isArray(menuRes.data)) {
                     menuData = menuRes.data;
