@@ -36,7 +36,7 @@ const RestaurantDetails = () => {
                 ]);
 
                 setHotel(hotelRes.data);
-                
+
                 let menuData = [];
                 if (Array.isArray(menuRes.data)) {
                     menuData = menuRes.data;
@@ -83,7 +83,7 @@ const RestaurantDetails = () => {
     if (error || !hotel) {
         return <div className="flex justify-center items-center min-h-screen text-red-500">{error || 'Restaurant not found'}</div>;
     }
-
+    
     return (
         <div className="max-w-6xl mx-auto px-6 py-6">
             <h1 className='text-3xl font-bold mb-6'>Restaurant Details</h1>
