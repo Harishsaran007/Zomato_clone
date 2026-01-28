@@ -13,8 +13,19 @@ import {
     TableRow,
 } from "@/Components/ui/table";
 import { Link } from 'react-router-dom';
-
 import { useAddress } from '@/context/AddressContext';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
+import { Trash2Icon } from "lucide-react"
 
 const DEFAULT_FOOD_IMAGE = "https://images.pexels.com/photos/1640777/pexels-photo-1640777.jpeg";
 
@@ -27,7 +38,6 @@ const Cart = () => {
     };
 
     const { user } = useAuth();
-    // No local address fetching logic here anymore
 
     const handlePlaceOrder = async () => {
         if (!selectedAddress) {
@@ -61,13 +71,23 @@ const Cart = () => {
         <div className="max-w-4xl mx-auto px-6 py-6">
             <div className="flex justify-between items-center mb-6">
                 <h1 className="text-3xl font-bold">Your Cart</h1>
-                <Button
-                    variant="outline"
-                    onClick={clearCart}
-                    className="text-red-500 border-red-500 hover:bg-red-50"
-                >
-                    Clear Cart
-                </Button>
+                <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                        <Button variant="outline" className='bg-red-100 text-red-500 hover:bg-red-200 hover:text-red-600'>Clear Cart</Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent size="sm">
+                        <AlertDialogHeader>
+                        <AlertDialogTitle>Clear cart?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                                This will permanently delete all items from your cart.
+                            </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                            <AlertDialogCancel variant="outline">Cancel</AlertDialogCancel>
+                            <AlertDialogAction variant="destructive" className='bg-red-100 text-red-500 hover:bg-red-200 hover:text-red-600' onClick={clearCart}>Delete</AlertDialogAction>
+                        </AlertDialogFooter>
+                    </AlertDialogContent>
+                </AlertDialog>
             </div>
 
             <div className="bg-white rounded-xl shadow-sm overflow-hidden mb-6">
@@ -105,7 +125,7 @@ const Cart = () => {
                                             variant="outline"
                                             size="sm"
                                             onClick={() => updateQuantity(item.id, item.hotelId, item.quantity - 1)}
-                                            className="h-8 w-8 p-0"
+                                            className="h-8 w-8 rounded-md flex items-center justify-center text-2xl font-thin"
                                         >
                                             -
                                         </Button>
@@ -114,7 +134,7 @@ const Cart = () => {
                                             variant="outline"
                                             size="sm"
                                             onClick={() => updateQuantity(item.id, item.hotelId, item.quantity + 1)}
-                                            className="h-8 w-8 p-0"
+                                            className="h-8 w-8 rounded-md flex items-center justify-center text-2xl font-thin"
                                         >
                                             +
                                         </Button>
@@ -128,7 +148,7 @@ const Cart = () => {
                                         variant="ghost"
                                         size="sm"
                                         onClick={() => removeFromCart(item.id, item.hotelId)}
-                                        className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                                        className="text-red-500 hover:text-red-700 hover:bg-red-50 text-sm"
                                     >
                                         Remove
                                     </Button>

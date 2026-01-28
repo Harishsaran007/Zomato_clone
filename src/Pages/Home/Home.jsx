@@ -4,6 +4,7 @@ import Deliver from "@/Components/Deliver/Deliver";
 import api from "@/utils/api";
 import restaurant_image from "../../assets/Restaurant1.jpg";
 import useInfiniteScroll from "@/hooks/useInfiniteScroll";
+import RestaurantSkeleton from "@/Components/Restaurant/RestaurantSkeleton";
 
 const Home = () => {
   const [hotels, setHotels] = useState([]);
@@ -59,19 +60,18 @@ const Home = () => {
               time="30"
             />
           ))}
+        {loading &&
+          Array.from({ length: hotels.length === 0 ? 8 : 4 }).map((_, index) => (
+            <RestaurantSkeleton key={`skeleton-${index}`} />
+          ))}
       </div>
 
 
       {hasMore && (
         <div
           ref={sentinelRef}
-          className="h-16 flex justify-center items-center"
+          className="h-4 flex justify-center items-center"
         >
-          {loading && (
-            <p className="text-gray-500 text-lg">
-              Loading more restaurants...
-            </p>
-          )}
         </div>
       )}
 

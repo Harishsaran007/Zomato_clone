@@ -117,10 +117,8 @@ export const CartProvider = ({ children }) => {
         try {
             if (cartItems.length === 0) throw new Error("Cart is empty");
 
-            // calculate total price
             const total_price = getCartTotal();
 
-            // Get user ID from stored user data
             const savedUser = localStorage.getItem('zomato-user');
             const tokenData = localStorage.getItem('zomato-token');
 
