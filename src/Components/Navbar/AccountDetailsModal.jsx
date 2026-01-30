@@ -7,43 +7,12 @@ import {
 } from "@/Components/ui/dialog";
 import api from '@/utils/api';
 import { useAuth } from '@/context/AuthContext';
+import { useUserDetails } from '@/hooks/api/useAuthMutations';
 
 const AccountDetailsModal = ({ isOpen, onClose }) => {
     const { user } = useAuth();
-    const [userDetails, setUserDetails] = useState(null);
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState(null);
-
-    useEffect(() => {
-        const fetchUserDetails = async () => {
-            if (isOpen && user?.id) {
-                setLoading(true);
-                try {
-                    const response = await api.get(`/api/users/${user.id}/`);
-                    let userData = response.data;
-                    if (Array.isArray(response.data)) {
-                        userData = response.data[0];
-                    } else if (response.data && Array.isArray(response.data.results)) {
-                        userData = response.data.results[0];
-                    }
-                    setUserDetails(userData);
-                    setError(null);
-                } catch (err) {
-                    console.error("Failed to fetch user details:", err);
-                    setError("Failed to load user details.");
-                } finally {
-                    setLoading(false);
-                }
-            }
-        };
-
-        if (isOpen) {
-            fetchUserDetails();
-        } else {
-            setUserDetails(null);
-            setError(null);
-        }
-    }, [isOpen, user]);
+    const { data: userDetails, isLoading: loading, error: queryError } = useUserDetails(user?.id, isOpen);
+    const error = queryError ? "Failed to load user details." : null;
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>

@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import api from '@/utils/api';
+import { useLogin, useSignup } from '@/hooks/api/useAuthMutations';
 
 const AuthContext = createContext();
 
@@ -14,9 +15,10 @@ export const useAuth = () => {
 export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
+    const loginMutation = useLogin();
+    const signupMutation = useSignup();
 
     useEffect(() => {
-        // Check for saved token on initial load
         const token = localStorage.getItem('zomato-token');
         const savedUser = localStorage.getItem('zomato-user');
 
@@ -53,14 +55,8 @@ export const AuthProvider = ({ children }) => {
 
     const login = async (username, password) => {
         try {
-            const response = await api.post('/token/', {
-                username,
-                password
-            });
-
-            const { access, refresh } = response.data;
-
-
+            const data = await loginMutation.mutateAsync({ username, password });
+            const { access, refresh } = data;
             let userId = null;
             try {
                 const base64Url = access.split('.')[1];
@@ -94,7 +90,7 @@ export const AuthProvider = ({ children }) => {
 
     const signup = async (userData) => {
         try {
-            await api.post('/api/users/', userData);
+            await signupMutation.mutateAsync(userData);
             return { success: true };
         } catch (error) {
             console.error("Signup failed", error);

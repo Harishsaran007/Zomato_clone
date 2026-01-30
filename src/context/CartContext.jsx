@@ -1,8 +1,14 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import api from '@/utils/api';
+import React, { createContext, useContext } from 'react';
 import { useAuth } from './AuthContext';
 import { useToast } from './ToastContext';
-
+import {
+    useCart as useCartQuery,
+    useAddToCart,
+    useRemoveFromCart,
+    useUpdateCartQuantity,
+    useClearCart,
+    usePlaceOrder as usePlaceOrderMutation
+} from '@/hooks/api/useCart';
 
 const CartContext = createContext();
 
@@ -17,53 +23,16 @@ export const useCart = () => {
 export const CartProvider = ({ children }) => {
     const { user } = useAuth();
     const { showToast } = useToast();
-    const [cartItems, setCartItems] = useState([]);
-
-    const fetchCart = async () => {
-        try {
-            const response = await api.get('/api/cart/');
-            let cartData = [];
-            if (Array.isArray(response.data)) {
-                cartData = response.data;
-            } else if (response.data && Array.isArray(response.data.results)) {
-                cartData = response.data.results;
-            } else if (response.data && Array.isArray(response.data.cart_items)) {
-                cartData = response.data.cart_items;
-            } else {
-                console.warn("Unexpected cart response format:", response.data);
-                cartData = [];
-            }
-
-            const mappedItems = cartData.map(item => ({
-                id: item.id,
-                name: item.food_name,
-                image: item.food_image,
-                price: item.food_price,
-                quantity: item.quantity,
-                total_price: item.total_price,
-                ...item
-            }));
-            setCartItems(mappedItems);
-        } catch (error) {
-            console.error("Failed to fetch cart:", error);
-        }
-    };
-
-    useEffect(() => {
-        if (user) {
-            fetchCart();
-        } else {
-            setCartItems([]);
-        }
-    }, [user]);
+    const { data: cartItems = [], refetch } = useCartQuery(!!user);
+    const addToCartMutation = useAddToCart();
+    const removeFromCartMutation = useRemoveFromCart();
+    const updateQuantityMutation = useUpdateCartQuantity();
+    const clearCartMutation = useClearCart();
+    const placeOrderMutation = usePlaceOrderMutation();
 
     const addToCart = async (item) => {
         try {
-            await api.post('/api/cart/', {
-                food: item.id,
-                quantity: 1
-            });
-            fetchCart();
+            await addToCartMutation.mutateAsync(item);
             return true;
         } catch (error) {
             console.error("Failed to add to cart:", error);
@@ -74,23 +43,15 @@ export const CartProvider = ({ children }) => {
 
     const removeFromCart = async (itemId) => {
         try {
-            await api.delete(`/api/cart/${itemId}/`);
-            fetchCart();
+            await removeFromCartMutation.mutateAsync(itemId);
         } catch (error) {
             console.error("Failed to remove from cart:", error);
         }
     };
 
     const updateQuantity = async (itemId, _, newQuantity) => {
-        if (newQuantity <= 0) {
-            removeFromCart(itemId);
-            return;
-        }
         try {
-            await api.patch(`/api/cart/${itemId}/`, {
-                quantity: newQuantity
-            });
-            fetchCart();
+            await updateQuantityMutation.mutateAsync({ itemId, quantity: newQuantity });
         } catch (error) {
             console.error("Failed to update quantity:", error);
         }
@@ -98,8 +59,7 @@ export const CartProvider = ({ children }) => {
 
     const clearCart = async () => {
         try {
-            await Promise.all(cartItems.map(item => api.delete(`/api/cart/${item.id}/`)));
-            fetchCart();
+            await clearCartMutation.mutateAsync(cartItems);
         } catch (error) {
             console.error("Failed to clear cart:", error);
         }
@@ -116,34 +76,14 @@ export const CartProvider = ({ children }) => {
     const placeOrder = async (addressId) => {
         try {
             if (cartItems.length === 0) throw new Error("Cart is empty");
+            if (!user) throw new Error("Please login to place an order");
+            if (!addressId) throw new Error("Please select a delivery address");
 
             const total_price = getCartTotal();
-
-            const savedUser = localStorage.getItem('zomato-user');
-            const tokenData = localStorage.getItem('zomato-token');
-
-            if (!tokenData) {
-                throw new Error("Please login to place an order");
-            }
-
-            if (!addressId) {
-                throw new Error("Please select a delivery address");
-            }
-
-            let userId = null;
-            if (savedUser) {
-                const parsedUser = JSON.parse(savedUser);
-                userId = parsedUser.id;
-            }
-
-            if (!userId) {
-                throw new Error("User ID not found. Please logout and login again.");
-            }
-
             const hotelId = cartItems[0]?.hotel || null;
 
             const orderData = {
-                user: userId,
+                user: user.id,
                 hotel: hotelId,
                 delivery_agent: null,
                 status: "ordered",
@@ -151,23 +91,7 @@ export const CartProvider = ({ children }) => {
                 address: addressId
             };
 
-            console.log("Creating order with data:", orderData);
-            const orderResponse = await api.post('/api/orders/', orderData);
-            console.log("Order created:", orderResponse.data);
-            const orderId = orderResponse.data.id;
-
-            try {
-                await clearCart();
-            } catch (clearErr) {
-                console.warn("Failed to clear cart after order:", clearErr);
-
-            }
-
-            console.log("Fetching payment link for order:", orderId);
-            const paymentResponse = await api.get(`/api/orders/${orderId}/pay/`);
-            console.log("Payment response:", paymentResponse.data);
-
-            const paymentUrl = paymentResponse.data.short_url || paymentResponse.data.pay_url;
+            const { paymentUrl } = await placeOrderMutation.mutateAsync({ orderData, cartItems });
 
             if (paymentUrl) {
                 window.location.href = paymentUrl;
@@ -179,11 +103,9 @@ export const CartProvider = ({ children }) => {
 
         } catch (error) {
             console.error("Order placement failed:", error);
-            console.error("Error response data:", error.response?.data);
 
             let message = "Failed to place order";
             if (error.response?.data) {
-
                 const errorData = error.response.data;
                 if (typeof errorData === 'object') {
                     message = Object.entries(errorData)
@@ -210,6 +132,7 @@ export const CartProvider = ({ children }) => {
                 clearCart,
                 getCartTotal,
                 getCartItemCount,
+                refetch
             }}
         >
             {children}

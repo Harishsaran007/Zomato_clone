@@ -16,47 +16,18 @@ import { useToast } from '@/context/ToastContext'
 import hotel_image from '../../assets/Restaurant1.jpg'
 import food_image from '../../assets/food4.jpg'
 
+import { useRestaurant, useRestaurantMenu } from '@/hooks/api/useRestaurant';
+
 const RestaurantDetails = () => {
     const { id } = useParams();
     const { addToCart } = useCart();
     const { showToast } = useToast();
-    const [hotel, setHotel] = useState(null);
-    const [menu, setMenu] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
 
-    useEffect(() => {
-        const fetchData = async () => {
-            try {
-                setLoading(true);
+    const { data: hotel, isLoading: hotelLoading, error: hotelError } = useRestaurant(id);
+    const { data: menu = [], isLoading: menuLoading, error: menuError } = useRestaurantMenu(id);
 
-                const [hotelRes, menuRes] = await Promise.all([
-                    api.get(`/api/hotels/${id}/`),
-                    api.get(`/api/hotels/${id}/foods/`)
-                ]);
-
-                setHotel(hotelRes.data);
-
-                let menuData = [];
-                if (Array.isArray(menuRes.data)) {
-                    menuData = menuRes.data;
-                } else if (menuRes.data && Array.isArray(menuRes.data.results)) {
-                    menuData = menuRes.data.results;
-                }
-                setMenu(menuData);
-                setError(null);
-            } catch (err) {
-                console.error('Error fetching restaurant details:', err);
-                setError('Failed to load restaurant details');
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        if (id) {
-            fetchData();
-        }
-    }, [id]);
+    const loading = hotelLoading || menuLoading;
+    const error = hotelError || menuError;
 
     const getImage = (url, defaultImg) => {
         return url && url.trim() !== '' ? url : defaultImg;
@@ -83,7 +54,7 @@ const RestaurantDetails = () => {
     if (error || !hotel) {
         return <div className="flex justify-center items-center min-h-screen text-red-500">{error || 'Restaurant not found'}</div>;
     }
-    
+
     return (
         <div className="max-w-6xl mx-auto px-6 py-6">
             <h1 className='text-3xl font-bold mb-6'>Restaurant Details</h1>

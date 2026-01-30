@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { getProvinces, addAddress as apiAddAddress, updateAddress as apiUpdateAddress, deleteAddress as apiDeleteAddress } from '@/services/addressService';
 import { useAuth } from './AuthContext';
+import { useAddress as useAddressQuery, useAddAddress, useUpdateAddress, useDeleteAddress } from '@/hooks/api/useAddress';
 
 const AddressContext = createContext();
 
@@ -14,50 +14,40 @@ export const useAddress = () => {
 
 export const AddressProvider = ({ children }) => {
     const { user } = useAuth();
-    const [addresses, setAddresses] = useState([]);
+    const { data: addresses = [], isLoading: loading } = useAddressQuery(!!user);
     const [selectedAddress, setSelectedAddress] = useState(null);
-    const [loading, setLoading] = useState(false);
-
-    const fetchAddresses = async () => {
-        if (user) {
-            setLoading(true);
-            try {
-                const data = await getProvinces();
-                setAddresses(data);
-
-                let nextSelection = null;
-
-                if (selectedAddress) {
-                    const exists = data.find(a => a.id === selectedAddress.id);
-                    if (exists) nextSelection = exists;
-                }
-
-                if (!nextSelection) {
-                    const defaultAddr = data.find(addr => addr.is_default);
-                    if (defaultAddr) {
-                        nextSelection = defaultAddr;
-                    } else if (data.length > 0) {
-                        // Fallback to first
-                        nextSelection = data[0];
-                    }
-                }
-
-                setSelectedAddress(nextSelection);
-
-            } catch (error) {
-                console.error("Failed to fetch addresses", error);
-            } finally {
-                setLoading(false);
-            }
-        } else {
-            setAddresses([]);
-            setSelectedAddress(null);
-        }
-    };
+    const addAddressMutation = useAddAddress();
+    const updateAddressMutation = useUpdateAddress();
+    const deleteAddressMutation = useDeleteAddress();
 
     useEffect(() => {
-        fetchAddresses();
-    }, [user]);
+        if (!user) {
+            setSelectedAddress(null);
+            return;
+        }
+
+        if (addresses.length > 0) {
+            let nextSelection = null;
+
+            if (selectedAddress) {
+                const exists = addresses.find(a => a.id === selectedAddress.id);
+                if (exists) nextSelection = exists;
+            }
+
+            if (!nextSelection) {
+                const defaultAddr = addresses.find(addr => addr.is_default);
+                nextSelection = defaultAddr || addresses[0];
+            }
+
+            if (nextSelection && (!selectedAddress || selectedAddress.id !== nextSelection.id || selectedAddress !== nextSelection)) {
+                setSelectedAddress(nextSelection);
+            }
+        } else {
+            if (selectedAddress) {
+                setSelectedAddress(null);
+            }
+        }
+    }, [addresses, user]);
 
     const selectAddress = (address) => {
         setSelectedAddress(address);
@@ -65,8 +55,7 @@ export const AddressProvider = ({ children }) => {
 
     const addAddress = async (newAddressData) => {
         try {
-            await apiAddAddress(newAddressData);
-            await fetchAddresses(); 
+            await addAddressMutation.mutateAsync(newAddressData);
         } catch (error) {
             console.error("Failed to add address", error);
             throw error;
@@ -75,8 +64,7 @@ export const AddressProvider = ({ children }) => {
 
     const updateAddress = async (id, updatedData) => {
         try {
-            await apiUpdateAddress(id, updatedData);
-            await fetchAddresses();
+            await updateAddressMutation.mutateAsync({ id, data: updatedData });
         } catch (error) {
             console.error("Failed to update address", error);
             throw error;
@@ -85,8 +73,7 @@ export const AddressProvider = ({ children }) => {
 
     const deleteAddress = async (id) => {
         try {
-            await apiDeleteAddress(id);
-            await fetchAddresses();
+            await deleteAddressMutation.mutateAsync(id);
         } catch (error) {
             console.error("Failed to delete address", error);
             throw error;

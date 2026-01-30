@@ -1,46 +1,42 @@
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { useRef } from "react";
 import Restaurant from "@/Components/Restaurant/Restaurant";
 import Deliver from "@/Components/Deliver/Deliver";
-import api from "@/utils/api";
 import restaurant_image from "../../assets/Restaurant1.jpg";
 import useInfiniteScroll from "@/hooks/useInfiniteScroll";
 import RestaurantSkeleton from "@/Components/Restaurant/RestaurantSkeleton";
+import { useHotels } from "@/hooks/api/useHotels";
 
 const Home = () => {
-  const [hotels, setHotels] = useState([]);
-  const [page, setPage] = useState(1);
-  const [hasMore, setHasMore] = useState(true);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+  const {
+    data,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    status,
+    error,
+  } = useHotels();
 
   const sentinelRef = useRef(null);
 
-  const fetchHotels = useCallback(async () => {
-    if (loading || !hasMore) return;
-
-    try {
-      setLoading(true);
-
-      const response = await api.get(`/api/hotels/?page=${page}`);
-
-      setHotels((prev) => [...prev, ...response.data.results]);
-      setHasMore(Boolean(response.data.next));
-      setPage((prev) => prev + 1);
-
-      setError(null);
-    } catch (err) {
-      console.error("Error fetching hotels:", err);
-      setError("Failed to load hotels. Please try again later.");
-    } finally {
-      setLoading(false);
+  useInfiniteScroll(() => {
+    if (hasNextPage && !isFetchingNextPage) {
+      fetchNextPage();
     }
-  }, [page, hasMore, loading]);
-
-  useInfiniteScroll(fetchHotels, sentinelRef);
+  }, sentinelRef);
 
   const getHotelImage = (imageUrl) => {
     return imageUrl && imageUrl.trim() !== "" ? imageUrl : restaurant_image;
   };
+
+  const hotels = data?.pages.flatMap((page) => page.results) || [];
+
+  if (status === 'error') {
+    return (
+      <div className="flex justify-center py-4 text-red-500">
+        Failed to load hotels. Please try again later.
+      </div>
+    );
+  }
 
   return (
     <div>
@@ -60,24 +56,18 @@ const Home = () => {
               time="30"
             />
           ))}
-        {loading &&
-          Array.from({ length: hotels.length === 0 ? 8 : 4 }).map((_, index) => (
+        {(status === 'pending' || isFetchingNextPage) &&
+          Array.from({ length: 4 }).map((_, index) => (
             <RestaurantSkeleton key={`skeleton-${index}`} />
           ))}
       </div>
 
 
-      {hasMore && (
+      {hasNextPage && (
         <div
           ref={sentinelRef}
           className="h-4 flex justify-center items-center"
         >
-        </div>
-      )}
-
-      {error && (
-        <div className="flex justify-center py-4 text-red-500">
-          {error}
         </div>
       )}
     </div>

@@ -13,7 +13,6 @@ const RestaurantSkeleton = () => {
                 </div>
 
                 <Skeleton className="h-3 w-1/2 rounded-md" />
-
                 <Skeleton className="h-3 w-1/4 rounded-md" />
             </div>
         </div>

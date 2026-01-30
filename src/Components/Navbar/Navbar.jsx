@@ -2,7 +2,6 @@ import React from 'react'
 import logo from '../../assets/zomato.png'
 import cart from '../../assets/shopping-cart.png'
 import { Link, useNavigate } from 'react-router-dom';
-import api from '@/utils/api';
 import { useState } from "react";
 import {
   Popover,
@@ -28,6 +27,7 @@ import { useAddress } from '@/context/AddressContext';
 import { MoreVertical, Edit2, Trash2, Menu, User, ShoppingBag, LogOut } from 'lucide-react';
 import AddAddressModal from './AddAddressModal';
 import AccountDetailsModal from './AccountDetailsModal';
+import { useSearchHotels, useSearchFoods } from '@/hooks/api/useHotels';
 
 
 const Navbar = () => {
@@ -38,9 +38,9 @@ const Navbar = () => {
   const [accountModalOpen, setAccountModalOpen] = useState(false);
   const [addressToEdit, setAddressToEdit] = useState(null);
 
-  // Search State
+
   const [searchQuery, setSearchQuery] = useState("");
-  const [searchResults, setSearchResults] = useState({ hotels: [], foods: [] });
+  const [debouncedQuery, setDebouncedQuery] = useState("");
   const [showResults, setShowResults] = useState(false);
   const navigate = useNavigate();
 
@@ -49,43 +49,24 @@ const Navbar = () => {
   const cartItemCount = getCartItemCount();
 
   React.useEffect(() => {
-    const timer = setTimeout(async () => {
-      if (searchQuery.trim().length > 0) {
-        try {
-          const [hotelsRes, foodsRes] = await Promise.all([
-            api.get(`/api/hotels/?search=${searchQuery}`),
-            api.get(`/api/foods/?search=${searchQuery}`)
-          ]);
-
-          let hotelsData = [];
-          if (Array.isArray(hotelsRes.data)) {
-            hotelsData = hotelsRes.data;
-          } else if (hotelsRes.data && Array.isArray(hotelsRes.data.results)) {
-            hotelsData = hotelsRes.data.results;
-          }
-
-          let foodsData = [];
-          if (Array.isArray(foodsRes.data)) {
-            foodsData = foodsRes.data;
-          } else if (foodsRes.data && Array.isArray(foodsRes.data.results)) {
-            foodsData = foodsRes.data.results;
-          }
-
-          setSearchResults({
-            hotels: hotelsData,
-            foods: foodsData
-          });
-          setShowResults(true);
-        } catch (error) {
-          console.error("Search failed", error);
-        }
-      } else {
-        setSearchResults({ hotels: [], foods: [] });
-        setShowResults(false);
-      }
+    const timer = setTimeout(() => {
+      setDebouncedQuery(searchQuery);
     }, 500);
-
     return () => clearTimeout(timer);
+  }, [searchQuery]);
+
+  const { data: hotelResults } = useSearchHotels(debouncedQuery);
+  const { data: foodResults } = useSearchFoods(debouncedQuery);
+
+  const searchResults = {
+    hotels: hotelResults || [],
+    foods: foodResults || []
+  };
+
+  React.useEffect(() => {
+    if (searchQuery.trim().length === 0) {
+      setShowResults(false);
+    }
   }, [searchQuery]);
 
 

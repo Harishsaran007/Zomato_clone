@@ -11,6 +11,9 @@ import { CartProvider } from './context/CartContext';
 import { AuthProvider } from './context/AuthContext';
 import { ToastProvider } from './context/ToastContext';
 import { AddressProvider } from './context/AddressContext';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+
+const queryClient = new QueryClient();
 
 const Layout = () => {
   const location = useLocation();
@@ -34,17 +37,19 @@ const Layout = () => {
 
 const App = () => {
   return (
-    <AuthProvider>
-      <ToastProvider>
-        <AddressProvider>
-          <CartProvider>
-            <BrowserRouter>
-              <Layout />
-            </BrowserRouter>
-          </CartProvider>
-        </AddressProvider>
-      </ToastProvider>
-    </AuthProvider>
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+        <ToastProvider>
+          <AddressProvider>
+            <CartProvider>
+              <BrowserRouter>
+                <Layout />
+              </BrowserRouter>
+            </CartProvider>
+          </AddressProvider>
+        </ToastProvider>
+      </AuthProvider>
+    </QueryClientProvider>
   )
 }
 
